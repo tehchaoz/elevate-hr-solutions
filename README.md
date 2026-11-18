@@ -1,6 +1,6 @@
 # elevate-hr-solutions
 
-One-page marketing site for Elevate HR Solutions (Chelsea Shumaker, PHR, SHRM-CP, Odessa, FL). Plain HTML/CSS/JS, no build step. Deploy the folder to any static host.
+One-page marketing site for Elevate HR Solutions (Chelsea Shumaker, PHR, Tampa, FL). Plain HTML/CSS/JS, no build step. Deploy the folder to any static host.
 
 - `index.html`, `css/styles.css`, `js/main.js`: the site.
 - `assets/`: `logo*.png` and `chelsea-headshot.jpg` extracted from the client's profile PDF (low resolution: 265x131 logo, 281x281 photo; ask for originals). `og-image.png` is a screenshot of the hero. Fonts: Plus Jakarta Sans, self-hosted.

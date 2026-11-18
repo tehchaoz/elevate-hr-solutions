@@ -162,7 +162,7 @@
     if (FORM_ENDPOINT) {
       status.textContent = 'Sending...';
       fetch(FORM_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(data) })
-        .then(function (r) { if (!r.ok) throw new Error(); status.textContent = 'Thank you. I will be in touch soon.'; form.reset(); })
+        .then(function (r) { if (!r.ok) throw new Error(); status.textContent = 'Thank you. We will be in touch soon.'; form.reset(); })
         .catch(function () { status.textContent = 'That did not send. Please email ' + CLIENT_EMAIL + ' or call 317-796-7914.'; });
     } else {
       var subject = 'Intro call inquiry' + (data.company ? ' - ' + data.company : '');

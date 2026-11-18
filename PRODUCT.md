@@ -18,11 +18,11 @@ Owners and operators of small and mid-sized businesses (ASSUMPTION: roughly 5 to
 
 ## Product Purpose
 
-Elevate HR Solutions is the independent HR consultancy of Chelsea Shumaker, PHR, SHRM-CP (Owner / HR Consultant), based in Odessa, Florida. The site exists so a business owner can understand within seconds what she does and book a free introductory call. Success is booked intro calls and calls or emails from owners.
+Elevate HR Solutions is the independent HR consultancy of Chelsea Shumaker, PHR (Founder / Principal HR Consultant), based in Tampa, Florida. The site exists so a business owner can understand within seconds what she does and book a free introductory call. Success is booked intro calls and calls or emails from owners.
 
 ## Positioning
 
-A senior, hands-on HR leader (20+ years) who works directly with the owner, as a one-time project partner or ongoing HR support, and also covers bookkeeping and administrative support so small-business operations run smoothly. Tagline: "Your Partner in People, Performance, and Compliance."
+A senior, hands-on HR leader (22 years) who works directly with the owner, as a one-time project partner or ongoing HR support, and also covers bookkeeping and administrative support so small-business operations run smoothly. Tagline: "Your Partner in People, Performance, and Compliance."
 
 ## Operating Context
 
@@ -50,8 +50,8 @@ No pricing is published and none may be invented.
 
 ## Evidence on Hand
 
-- Real: 20+ years HR experience, PHR and SHRM-CP credentials, multi-state organizations during growth and transformation, industries listed above, her photo and logo (`assets/`).
-- Absent and must not be fabricated: testimonials, client names or logos, case studies, metrics, pricing, years in business for Elevate itself, certifications beyond PHR and SHRM-CP, awards.
+- Real: 22 years HR experience, PHR credential, multi-state organizations during growth and transformation, industries listed above, her photo and logo (`assets/`).
+- Absent and must not be fabricated: testimonials, client names or logos, case studies, metrics, pricing, years in business for Elevate itself, certifications beyond PHR, awards.
 
 ## Product Principles
 
