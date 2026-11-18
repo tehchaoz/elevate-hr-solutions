@@ -307,6 +307,13 @@ h3 { letter-spacing: -0.015em; line-height: 1.25; }
 .testi blockquote p { color: var(--ink); max-width: 62ch; }
 .testi figcaption { display: grid; gap: 0.15rem; font-size: var(--t-small); line-height: 1.5; color: var(--muted); }
 .testi figcaption strong { color: var(--navy); font-size: var(--t-body); }
+.testi { position: relative; transition: background-color 0.25s; }
+.testi:hover { background: #fff; }
+.testi-link { color: var(--teal-ink); font-weight: 650; display: inline-flex; align-items: center; gap: 0.4rem; width: fit-content; }
+.testi-link::after { content: ""; position: absolute; inset: 0; border-radius: var(--r-lg); }
+.testi-link svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.3s var(--ease-out); }
+.testi:hover .testi-link svg { transform: translateX(3px); }
+.testi-link:focus-visible { outline: 3px solid var(--teal); outline-offset: 4px; border-radius: 4px; }
 .testimonial + .about { padding-top: clamp(4rem, 9vw, 7.5rem); }
 
 /* About */
