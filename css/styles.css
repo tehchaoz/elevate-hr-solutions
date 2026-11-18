@@ -301,6 +301,14 @@ h3 { letter-spacing: -0.015em; line-height: 1.25; }
 .why dd { color: var(--ink); max-width: 44ch; }
 @media (min-width: 800px) { .why { grid-template-columns: 1fr 1fr; column-gap: 4rem; } }
 
+/* Client testimonial */
+.testi { margin: 0; display: grid; gap: 1.5rem; background: var(--cream); border-radius: var(--r-lg); padding: clamp(1.5rem, 4vw, 2.75rem); }
+.testi blockquote { margin: 0; display: grid; gap: 1.1rem; }
+.testi blockquote p { color: var(--ink); max-width: 62ch; }
+.testi figcaption { display: grid; gap: 0.15rem; font-size: var(--t-small); line-height: 1.5; color: var(--muted); }
+.testi figcaption strong { color: var(--navy); font-size: var(--t-body); }
+.testimonial + .about { padding-top: clamp(4rem, 9vw, 7.5rem); }
+
 /* About */
 .about { padding-top: 0; }
 .about-grid { display: grid; gap: 2.5rem; align-items: center; }
