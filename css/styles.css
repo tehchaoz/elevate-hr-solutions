@@ -191,7 +191,7 @@ h3 { letter-spacing: -0.015em; line-height: 1.25; }
 .hero-sig { display: grid; gap: 0.15rem; font-size: var(--t-small); color: var(--muted); margin-top: 0.5rem; }
 .hero-sig strong { color: var(--navy); font-weight: 700; font-size: var(--t-body); }
 
-.hero-visual { position: relative; width: min(100%, 410px); aspect-ratio: 1; margin-inline: auto; }
+.hero-visual { position: relative; width: min(100%, 308px); aspect-ratio: 1; margin-inline: auto; }
 .shape { position: absolute; }
 .shape-navy { inset: 0; width: 100%; height: 100%; fill: var(--navy); border-radius: 0 44px 0 0; }
 .shape-teal { inset: 0; width: 100%; height: 100%; fill: var(--teal); border-radius: 0 0 0 44px; }
