@@ -34,11 +34,20 @@
     nav.classList.toggle('is-stuck', window.scrollY > 24);
     updateBar();
   }
-  function closeSheet() { toggle.setAttribute('aria-expanded', 'false'); sheet.hidden = true; }
+  function closeSheet() {
+    if (sheet.hidden) return;
+    toggle.setAttribute('aria-expanded', 'false');
+    sheet.classList.add('closing');
+    var done = function () { sheet.hidden = true; sheet.classList.remove('closing'); };
+    sheet.addEventListener('animationend', done, { once: true });
+    setTimeout(function () { if (sheet.classList.contains('closing')) done(); }, 450);
+  }
   toggle.addEventListener('click', function () {
     var open = toggle.getAttribute('aria-expanded') === 'true';
-    toggle.setAttribute('aria-expanded', String(!open));
-    sheet.hidden = open;
+    if (open) { closeSheet(); return; }
+    sheet.classList.remove('closing');
+    sheet.hidden = false;
+    toggle.setAttribute('aria-expanded', 'true');
   });
   $$('a', sheet).forEach(function (a) { a.addEventListener('click', closeSheet); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !sheet.hidden) { closeSheet(); toggle.focus(); } });
