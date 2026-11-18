@@ -13,3 +13,7 @@ One-page marketing site for Elevate HR Solutions (Chelsea Shumaker, PHR, SHRM-CP
 3. Exact LinkedIn URL (card prints `elevate-hrsolutions`; site uses `linkedin.com/company/elevate-hrsolutions`).
 4. Confirm domain `elevatehr.org` (used in canonical, sitemap and schema), and exact brand colors (estimated from a photo of the business card).
 5. High-resolution logo and headshot. Real testimonials, if she wants them (none are invented).
+
+## At launch (preview to production)
+- Replace `https://tehchaoz.github.io/elevate-hr-solutions/` with `https://elevatehr.org/` in `index.html` (canonical, og tags, structured data).
+- Remove the `noindex, nofollow` meta tag and the "design preview" footer line.

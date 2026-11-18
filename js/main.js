@@ -140,7 +140,18 @@
       var subject = 'Intro call inquiry' + (data.company ? ' - ' + data.company : '');
       var body = data.message + '\n\n' + data.name + (data.company ? '\n' + data.company : '') + '\n' + data.email;
       window.location.href = 'mailto:' + CLIENT_EMAIL + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
-      status.textContent = 'Opening your email app. You can also write to ' + CLIENT_EMAIL + '.';
+      // Not every visitor has an email app, so never rely on it alone: offer a copy of the message.
+      var full = 'To: ' + CLIENT_EMAIL + '\nSubject: ' + subject + '\n\n' + body;
+      status.textContent = 'Your email app should open with your message. If nothing happens, ';
+      var copy = document.createElement('button');
+      copy.type = 'button'; copy.className = 'link-btn'; copy.textContent = 'copy your message';
+      copy.addEventListener('click', function () {
+        var done = function () { status.textContent = 'Copied. Paste it into an email to ' + CLIENT_EMAIL + ', or call 317-796-7914.'; };
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(full).then(done, done);
+        else done();
+      });
+      status.appendChild(copy);
+      status.appendChild(document.createTextNode(' or email ' + CLIENT_EMAIL + ' directly.'));
     }
   });
 })();
