@@ -116,28 +116,47 @@
 
   /* Contact form: inline validation, then endpoint or mailto fallback */
   var form = $('#contact-form'), status = $('#formStatus');
-  function setErr(field, msg) {
-    var wrap = field.closest('.field'); var out = $('.err', wrap);
-    wrap.classList.toggle('invalid', !!msg);
-    field.setAttribute('aria-invalid', msg ? 'true' : 'false');
-    if (out) out.textContent = msg || '';
+  // Native constraint validation (required, type, pattern) with :user-invalid styling in CSS.
+  // JS only keeps ARIA in sync: aria-invalid, the error linked via aria-describedby while it
+  // shows, and one polite live region for errors that appear when a field is left.
+  var announcer = document.createElement('div');
+  announcer.setAttribute('aria-live', 'polite');
+  announcer.className = 'visually-hidden';
+  document.body.appendChild(announcer);
+  var announceTimer;
+  function linkError(el, shown) {
+    var id = el.dataset.error; if (!id) return;
+    var ids = (el.getAttribute('aria-describedby') || '').split(/\s+/).filter(function (x) { return x && x !== id; });
+    if (shown) ids.push(id);
+    if (ids.length) el.setAttribute('aria-describedby', ids.join(' ')); else el.removeAttribute('aria-describedby');
   }
-  function validate(field) {
-    var v = field.value.trim();
-    if (field.required && !v) { setErr(field, 'Please fill this in.'); return false; }
-    if (field.type === 'email' && v && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) { setErr(field, 'Enter an email like name@company.com.'); return false; }
-    setErr(field, ''); return true;
+  function syncAria(el, announce) {
+    var invalid = el.matches(':user-invalid');
+    el.setAttribute('aria-invalid', invalid ? 'true' : 'false');
+    linkError(el, invalid);
+    if (invalid && announce && el.dataset.error) {
+      var label = el.labels && el.labels[0] ? el.labels[0].textContent.trim() + ': ' : '';
+      var msg = 'Error: ' + $('#' + el.dataset.error).textContent.replace(/[^\w\s.@-]/g, '').trim();
+      clearTimeout(announceTimer); announcer.textContent = '';
+      announceTimer = setTimeout(function () { announcer.textContent = label + msg; }, 500);
+    }
   }
-  $$('input, textarea', form).forEach(function (f) {
-    f.addEventListener('blur', function () { if (f.value || f.closest('.invalid')) validate(f); });
-    f.addEventListener('input', function () { if (f.closest('.invalid')) validate(f); });
+  var fields = $$('input, textarea', form);
+  fields.forEach(function (f) {
+    syncAria(f);
+    f.addEventListener('blur', function () { syncAria(f, true); });
+    f.addEventListener('input', function () { syncAria(f); });
+    // A failed submit fires 'invalid' on every failing field, untouched ones included.
+    // Suppress the browser's own bubble (our inline error shows) and focus the first one.
+    f.addEventListener('invalid', function (e) {
+      e.preventDefault(); syncAria(f);
+      if (f === form.querySelector(':invalid')) f.focus();
+    });
   });
+  form.addEventListener('reset', function () { setTimeout(function () { fields.forEach(function (f) { syncAria(f); }); }); });
   form.addEventListener('submit', function (e) {
     e.preventDefault();
-    var fields = $$('input, textarea', form);
-    var firstBad = null;
-    fields.forEach(function (f) { if (!validate(f) && !firstBad) firstBad = f; });
-    if (firstBad) { firstBad.focus(); status.textContent = ''; return; }
+    status.textContent = '';
     var data = {};
     fields.forEach(function (f) { data[f.name] = f.value.trim(); });
     if (FORM_ENDPOINT) {

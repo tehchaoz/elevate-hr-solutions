@@ -288,17 +288,17 @@
       </ul>
     </div>
 
-    <form class="form" id="contact-form" novalidate data-reveal>
+    <form class="form" id="contact-form" data-reveal>
       <h3>Send a message</h3>
       <div class="field">
         <label for="f-name">Your name</label>
-        <input id="f-name" aria-describedby="err-name" aria-required="true" name="name" type="text" autocomplete="name" required>
-        <span class="err" id="err-name" role="alert"></span>
+        <input id="f-name" name="name" type="text" autocomplete="name" required pattern=".*\S.*" data-error="err-name">
+        <div class="err" id="err-name"><span role="img" aria-label="Error">&#9888;</span> Please enter your name.</div>
       </div>
       <div class="field">
         <label for="f-email">Email</label>
-        <input id="f-email" aria-describedby="err-email" aria-required="true" name="email" type="email" autocomplete="email" required>
-        <span class="err" id="err-email" role="alert"></span>
+        <input id="f-email" name="email" type="email" autocomplete="email" required pattern="[^\s@]+@[^\s@]+\.[^\s@]+" data-error="err-email">
+        <div class="err" id="err-email"><span role="img" aria-label="Error">&#9888;</span> Please enter an email like name@company.com.</div>
       </div>
       <div class="field">
         <label for="f-company">Business name <small>(optional)</small></label>
@@ -306,8 +306,8 @@
       </div>
       <div class="field">
         <label for="f-msg">How can I help?</label>
-        <textarea id="f-msg" aria-describedby="err-msg" aria-required="true" name="message" rows="4" required></textarea>
-        <span class="err" id="err-msg" role="alert"></span>
+        <textarea id="f-msg" name="message" rows="4" required data-error="err-msg"></textarea>
+        <div class="err" id="err-msg"><span role="img" aria-label="Error">&#9888;</span> Please tell me how I can help.</div>
       </div>
       <button class="btn btn-primary" type="submit">Send message</button>
       <p class="form-status" id="formStatus" role="status" aria-live="polite"></p>

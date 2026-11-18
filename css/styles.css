@@ -342,8 +342,10 @@ h3 { letter-spacing: -0.015em; line-height: 1.25; }
 .field input, .field textarea { width: 100%; font: inherit; font-size: var(--t-body); color: var(--navy); background: #fff; border: 1.5px solid rgb(var(--navy-rgb) / 0.28); border-radius: 14px; padding: 0.8rem 1rem; min-height: 48px; transition: border-color 0.2s; resize: vertical; }
 .field input:hover, .field textarea:hover { border-color: rgb(var(--navy-rgb) / 0.55); }
 .field input:focus, .field textarea:focus { outline: 3px solid var(--teal); outline-offset: 2px; border-color: var(--teal-strong); }
-.field.invalid input, .field.invalid textarea { border-color: var(--danger); }
-.err { color: var(--danger); font-size: var(--t-small); min-height: 0; font-weight: 550; }
+.field input:user-invalid, .field textarea:user-invalid { border-color: var(--danger); }
+.err { display: none; color: var(--danger); font-size: var(--t-small); font-weight: 550; }
+.field :user-invalid + .err { display: block; }
+.visually-hidden:where(:not(:focus-within, :active)) { position: absolute !important; clip-path: inset(50%) !important; overflow: hidden !important; width: 1px !important; height: 1px !important; white-space: nowrap !important; }
 .form .btn { justify-self: start; }
 .form-status { font-weight: 600; color: var(--teal-ink); min-height: 1.5em; }
 @media (min-width: 900px) { .contact-grid { grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center; } }
