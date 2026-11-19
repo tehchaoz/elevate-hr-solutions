@@ -103,7 +103,7 @@ a { color: inherit; text-underline-offset: 0.2em; text-decoration-thickness: 1.5
   max-width: 20ch;
 }
 .h-section.center { max-width: 24ch; }
-.tl { color: var(--teal); } /* the logo green, as the client asked; large display text only */
+.tl { color: var(--teal-strong); } /* taste audit: darker green for contrast (logo green #8fc8c2 was 1.7:1 on cream) */
 h3 { letter-spacing: -0.015em; line-height: 1.25; }
 .lede { font-size: var(--t-lead); line-height: 1.55; color: var(--ink); max-width: 38ch; font-style: italic; }
 
