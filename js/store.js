@@ -194,7 +194,7 @@
   function renderTestimonials() {
     var box = document.querySelector('.testi-list'); if (!box || !Store.has('testimonials')) return;
     var list = Store.get('testimonials'); box.textContent = '';
-    var h = document.getElementById('testi-h'); if (h && list[0] && list[0].headline) h.textContent = '\u201c' + list[0].headline + '\u201d';
+    var h = document.getElementById('testi-pull'); if (h && list[0] && list[0].headline) h.textContent = '\u201c' + list[0].headline + '\u201d';
     list.forEach(function (t) {
       var paras = t.quote.split(/\n\s*\n/).map(function (x) { return x.trim(); }).filter(Boolean).map(function (x) { return el('p', { text: x }); });
       var cap = el('figcaption', {}, [el('strong', { text: t.name }), t.title ? el('span', { text: t.title }) : null]);
