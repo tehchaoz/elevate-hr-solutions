@@ -269,7 +269,7 @@ h3 { letter-spacing: -0.015em; line-height: 1.25; }
 
 /* Working together */
 .modes { display: grid; gap: 1.25rem; margin-top: 3rem; }
-.mode { position: relative; overflow: hidden; border-radius: var(--r-lg); padding: clamp(1.75rem, 4vw, 3rem); padding-bottom: clamp(2.75rem, 5vw, 3.5rem); display: grid; gap: 1rem; align-content: start; isolation: isolate; transition: transform 0.6s var(--ease-out); }
+.mode { position: relative; overflow: hidden; border-radius: var(--r-lg); padding: clamp(1.75rem, 4vw, 3rem); padding-bottom: 7.25rem; display: grid; gap: 1rem; align-content: start; isolation: isolate; transition: transform 0.6s var(--ease-out); }
 .mode h3 { font-size: var(--t-h3); letter-spacing: -0.025em; }
 .mode p { max-width: 46ch; }
 .mode::after { content: ""; position: absolute; z-index: -1; width: 220px; height: 220px; border-radius: 50%; right: -70px; bottom: -110px; transition: transform 0.8s var(--ease-out); }
@@ -280,7 +280,7 @@ h3 { letter-spacing: -0.015em; line-height: 1.25; }
 .mode-project p { color: var(--ink); }
 .mode-project .link-arrow { color: var(--teal-ink); }
 .mode-ongoing { background: var(--navy); color: var(--cream); }
-.mode-ongoing::after { background: var(--teal-light); opacity: 1; bottom: -165px; }
+.mode-ongoing::after { background: var(--teal-light); opacity: 1; }
 .mode-ongoing p { color: rgba(247, 244, 234, 0.86); }
 .mode-ongoing .link-arrow { color: var(--teal-light); }
 .mode-interim { background: #fff; }
