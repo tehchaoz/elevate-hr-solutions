@@ -116,47 +116,6 @@
     SYNC.forEach(function (k) { if (live[k] !== undefined) n[k] = clone(live[k]); }); return write(n);
   };
 
-  /* ---- Publish: commit content.json to the repo through the GitHub API ---- */
-  var TKEY = 'elevate.gh';
-  Store.token = function () { try { return sessionStorage.getItem(TKEY) || localStorage.getItem(TKEY) || ''; } catch (e) { return ''; } };
-  Store.saveToken = function (t, remember) { try { sessionStorage.removeItem(TKEY); localStorage.removeItem(TKEY); (remember ? localStorage : sessionStorage).setItem(TKEY, t); return true; } catch (e) { return false; } };
-  Store.clearToken = function () { try { sessionStorage.removeItem(TKEY); localStorage.removeItem(TKEY); } catch (e) {} };
-  function gh(token) { return { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' }; }
-  function ghErr(r) {
-    var m = r.status === 401 ? 'The publishing key was not accepted. It may be wrong, expired or revoked.'
-      : (r.status === 403 || r.status === 404) ? 'The publishing key is not allowed to change this site. Ask your web developer for a new one.'
-      : r.status === 429 ? 'Too many requests. Try again in a minute.'
-      : 'Publishing hit an error (' + r.status + '). Nothing was changed.';
-    var e = new Error(m); e.status = r.status; return e;
-  }
-  Store.checkToken = function (token) {
-    return fetch('https://api.github.com/repos/' + CFG.repo, { headers: gh(token) }).then(function (r) { if (!r.ok) throw ghErr(r); return true; });
-  };
-  function b64(s) { var b = new TextEncoder().encode(s), o = ''; for (var i = 0; i < b.length; i += 8192) o += String.fromCharCode.apply(null, b.subarray(i, i + 8192)); return btoa(o); }
-  function unb64(c) { var bin = atob(String(c).replace(/\s/g, '')), a = new Uint8Array(bin.length); for (var i = 0; i < a.length; i++) a[i] = bin.charCodeAt(i); return new TextDecoder().decode(a); }
-  /* confirmFn(): called if someone else published since this page loaded; return false to stop. */
-  Store.publish = function (token, who, confirmFn, retried) {
-    var d = clean(read()), payload = { version: 1, updated: new Date().toISOString(), updatedBy: who };
-    SYNC.forEach(function (k) { if (d[k] !== undefined) payload[k] = d[k]; });
-    var text = JSON.stringify(payload, null, 2) + '\n';
-    if (text.length > 3000000) return Promise.reject(new Error('The content is too large to publish. Remove or shrink some team photos.'));
-    var api = 'https://api.github.com/repos/' + CFG.repo + '/contents/' + CFG.file;
-    return fetch(api + '?ref=' + encodeURIComponent(CFG.branch), { headers: gh(token), cache: 'no-store' }).then(function (r) {
-      if (r.status === 404) return { sha: null, remote: null };
-      if (!r.ok) throw ghErr(r);
-      return r.json().then(function (j) { var rm = null; try { rm = clean(JSON.parse(unb64(j.content))); } catch (e) {} return { sha: j.sha, remote: rm }; });
-    }).then(function (cur0) {
-      if (cur0.remote && stable(cur0.remote) !== stable(live) && confirmFn && !confirmFn()) { var c = new Error('cancelled'); c.cancelled = true; throw c; }
-      var body = { message: 'Admin publish by ' + who, content: b64(text), branch: CFG.branch }; if (cur0.sha) body.sha = cur0.sha;
-      return fetch(api, { method: 'PUT', headers: Object.assign({ 'Content-Type': 'application/json' }, gh(token)), body: JSON.stringify(body) });
-    }).then(function (r) {
-      if ((r.status === 409 || r.status === 422) && !retried) return Store.publish(token, who, null, true);
-      if (!r.ok) throw ghErr(r);
-      live = clean(payload); liveStamp = payload.updated; try { localStorage.setItem(LIVEKEY, JSON.stringify(payload)); } catch (e) {}
-      return payload;
-    });
-  };
-
   /* ---- password hashing: salted PBKDF2, never stored as text ---- */
   function hex(b) { return Array.prototype.map.call(new Uint8Array(b), function (x) { return ('0' + x.toString(16)).slice(-2); }).join(''); }
   function unhex(s) { var a = new Uint8Array(s.length / 2); for (var i = 0; i < a.length; i++) a[i] = parseInt(s.substr(i * 2, 2), 16); return a; }
@@ -254,7 +213,7 @@
   function previewBar() {
     if (document.getElementById('preview-bar') || !Store.changes().length) return;
     var a = el('a', { href: 'admin.html', text: 'Back to Admin' });
-    document.body.appendChild(el('div', { id: 'preview-bar', 'class': 'preview-bar', role: 'note' }, [el('span', { text: 'Previewing your unpublished edits. Visitors still see the published site.' }), a]));
+    document.body.appendChild(el('div', { id: 'preview-bar', 'class': 'preview-bar', role: 'note' }, [el('span', { text: 'Previewing your saved edits. Visitors do not see them.' }), a]));
   }
   if (document.querySelector('[data-sec]') || document.querySelector('.svc-list') || document.querySelector('.faq') || document.querySelector('.team') || document.querySelector('[data-book]')) {
     if (sessionActive() && read().__seeded) mode = 'draft';

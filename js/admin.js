@@ -1,10 +1,8 @@
-/* Elevate HR Solutions: admin screen. Saves a draft in this browser; Publish commits content.json to the repo. Needs js/store.js. */
+/* Elevate HR Solutions: admin screen.  Edits are saved in this browser. Needs js/store.js. */
 (function () {
   'use strict';
   var S = window.ElevateStore, el = S.el;
   S.useDraft();
-  var NAMES = { theme: 'Colors', services: 'Services', faq: 'FAQ', team: 'Team', testimonials: 'Testimonials', settings: 'Calendly / entries settings' };
-  var note = { text: '', bad: false };
   function $(s, r) { return (r || document).querySelector(s); }
   var SESS = 'elevate.sess', LOCK = 'elevate.lock', TTL = 30 * 60 * 1000;
   var me = null, tab = 'colors', statusT;
@@ -15,17 +13,7 @@
   function touch() { var s = getSess(); if (s) setSess(s.email); }
   function lockState() { try { return JSON.parse(localStorage.getItem(LOCK)) || { n: 0, until: 0 }; } catch (e) { return { n: 0, until: 0 }; } }
   function setLock(o) { try { localStorage.setItem(LOCK, JSON.stringify(o)); } catch (e) {} }
-  function say(msg, bad) { var s = $('#status'); s.textContent = msg; s.className = 'a-status' + (bad ? ' bad' : ''); clearTimeout(statusT); statusT = setTimeout(function () { s.textContent = ''; }, 5000); pubBar(); }
-  function goPublish() { tab = 'publish'; renderTabs(); renderPanel(); }
-  /* The banner shown on every tab while there are saved changes that visitors cannot see yet. */
-  function pubBar() {
-    var b = $('#pubbar'); if (!b) return; var ch = S.changes(); b.textContent = '';
-    if (!ch.length || !me) { b.hidden = true; return; }
-    b.hidden = false;
-    b.appendChild(el('span', { text: 'Not live yet: ' + ch.map(function (k) { return NAMES[k]; }).join(', ') + ' changed. Visitors still see the old version.' }));
-    if (tab !== 'publish') b.appendChild(btn('Go to Publish', goPublish, 'a-btn'));
-  }
-  function setNote(text, bad) { note.text = text; note.bad = !!bad; var m = $('#pub-msg'); if (m) { m.textContent = text; m.className = 'a-msg' + (bad ? '' : ' ok'); } }
+  function say(msg, bad) { var s = $('#status'); s.textContent = msg; s.className = 'a-status' + (bad ? ' bad' : ''); clearTimeout(statusT); statusT = setTimeout(function () { s.textContent = ''; }, 5000); }
 
   /* ---------- password rules ---------- */
   function pwProblem(pw, user) {
@@ -57,7 +45,7 @@
   }
 
   /* ---------- tabs ---------- */
-  var TABS = [['colors', 'Colors'], ['services', 'Services'], ['faq', 'FAQ'], ['team', 'Team'], ['testimonials', 'Testimonials'], ['calendly', 'Calendly'], ['entries', 'Intro call entries'], ['publish', 'Publish'], ['admins', 'Admins'], ['account', 'Account']];
+  var TABS = [['colors', 'Colors'], ['services', 'Services'], ['faq', 'FAQ'], ['team', 'Team'], ['testimonials', 'Testimonials'], ['calendly', 'Calendly'], ['entries', 'Intro call entries'], ['admins', 'Admins'], ['account', 'Account']];
   function renderTabs() {
     var nav = $('#tabs'); nav.textContent = '';
     TABS.forEach(function (t) {
@@ -68,8 +56,7 @@
   }
   function renderPanel() {
     var p = $('#panel'); p.textContent = ''; touch();
-    ({ colors: colorsPanel, services: servicesPanel, faq: faqPanel, team: teamPanel, testimonials: testimonialsPanel, calendly: calendlyPanel, entries: entriesPanel, publish: publishPanel, admins: adminsPanel, account: accountPanel })[tab](p);
-    pubBar();
+    ({ colors: colorsPanel, services: servicesPanel, faq: faqPanel, team: teamPanel, testimonials: testimonialsPanel, calendly: calendlyPanel, entries: entriesPanel, admins: adminsPanel, account: accountPanel })[tab](p);
   }
   function head(p, title, text) { p.appendChild(el('h2', { text: title })); if (text) p.appendChild(el('p', { 'class': 'a-lede', text: text })); }
 
@@ -99,7 +86,7 @@
     p.appendChild(el('div', { 'class': 'a-actions' }, [btn('Save colors', function () {
       var clean = {}; Object.keys(theme).forEach(function (k) { var c = theme[k]; if (c && ((c.bg && S.ok(c.bg)) || (c.text && S.ok(c.text)))) clean[k] = c; });
       if (Object.keys(clean).length) S.set('theme', clean); else S.reset('theme');
-      say('Colors saved as a draft. Press Publish to put them on the live site.');
+      say('Colors saved.');
     }, 'btn btn-primary'), btn('Reset all colors', function () { if (confirm('Set every section back to its original colors?')) { S.reset('theme'); renderPanel(); say('All colors reset.'); } }, 'a-btn a-btn-quiet')]));
   }
 
@@ -121,7 +108,7 @@
     draw();
     p.appendChild(el('div', { 'class': 'a-actions' }, [
       btn('Add a service', function () { list.push({ id: 's' + Date.now(), title: '', items: [] }); draw(); }, 'a-btn'),
-      btn('Save services', function () { var ok = list.filter(function (s) { return s.title.trim(); }); if (!ok.length) { say('Keep at least one service.', true); return; } S.set('services', ok); say('Services saved as a draft. Press Publish to put them on the live site.'); }, 'btn btn-primary'),
+      btn('Save services', function () { var ok = list.filter(function (s) { return s.title.trim(); }); if (!ok.length) { say('Keep at least one service.', true); return; } S.set('services', ok); say('Services saved.'); }, 'btn btn-primary'),
       btn('Restore original', function () { if (confirm('Restore the original services list?')) { S.reset('services'); renderPanel(); } }, 'a-btn a-btn-quiet')]));
   }
 
@@ -141,7 +128,7 @@
     draw();
     p.appendChild(el('div', { 'class': 'a-actions' }, [
       btn('Add a question', function () { list.push({ q: '', a: '' }); draw(); }, 'a-btn'),
-      btn('Save FAQ', function () { var ok = list.filter(function (f) { return f.q.trim() && f.a.trim(); }); S.set('faq', ok); say('FAQ saved as a draft. Press Publish to put it on the live site.'); }, 'btn btn-primary'),
+      btn('Save FAQ', function () { var ok = list.filter(function (f) { return f.q.trim() && f.a.trim(); }); S.set('faq', ok); say('FAQ saved.'); }, 'btn btn-primary'),
       btn('Restore original', function () { if (confirm('Restore the original FAQ?')) { S.reset('faq'); renderPanel(); } }, 'a-btn a-btn-quiet')]));
   }
 
@@ -184,7 +171,7 @@
     draw();
     p.appendChild(el('div', { 'class': 'a-actions' }, [
       btn('Add a team member', function () { list.push({ id: 'm' + Date.now(), name: '', role: '', bio: '', photo: '' }); draw(); }, 'a-btn'),
-      btn('Save team', function () { var ok = list.filter(function (m, i) { return i === 0 || m.name.trim(); }); try { if (!S.set('team', ok)) throw 0; say('Team saved as a draft. Press Publish to put it on the live site.'); } catch (e) { say('Could not save: the photos may be too large for this browser. Remove a photo and try again.', true); } }, 'btn btn-primary'),
+      btn('Save team', function () { var ok = list.filter(function (m, i) { return i === 0 || m.name.trim(); }); try { if (!S.set('team', ok)) throw 0; say('Team saved.'); } catch (e) { say('Could not save: the photos may be too large for this browser. Remove a photo and try again.', true); } }, 'btn btn-primary'),
       btn('Restore original', function () { if (confirm('Restore the original team (owner only)?')) { S.reset('team'); renderPanel(); } }, 'a-btn a-btn-quiet')]));
   }
 
@@ -224,7 +211,7 @@
         }
         if (!list.length) { msg.textContent = 'Keep at least one testimonial, or use "Restore original".'; return; }
         S.set('testimonials', list.map(function (t) { return { id: t.id, headline: t.headline.trim(), quote: t.quote.trim(), name: t.name.trim(), title: t.title.trim(), link: S.url(t.link), linkText: t.linkText.trim() }; }));
-        say('Testimonials saved as a draft. Press Publish to put them on the live site.');
+        say('Testimonials saved.');
       }, 'btn btn-primary'),
       btn('Restore original', function () { if (confirm('Restore the original testimonial?')) { S.reset('testimonials'); renderPanel(); } }, 'a-btn a-btn-quiet')]));
   }
@@ -246,7 +233,7 @@
           var v = u.value.trim(); msg.textContent = '';
           if (v && !S.url(v)) { msg.textContent = 'Enter the full link, starting with https://'; return; }
           var st = getSettings(); st.calendly = v ? S.url(v) : ''; putSettings(st);
-          say(v ? 'Calendly link saved as a draft. Press Publish to put it on the live site.' : 'Calendly link cleared. Press Publish to apply it.');
+          say(v ? 'Calendly link saved.' : 'Calendly link cleared.');
         }, 'btn btn-primary'),
         btn('Test the link', function () { var v = S.url(u.value); if (!v) { msg.textContent = 'Enter a full https:// link first.'; return; } window.open(v, '_blank', 'noopener'); }, 'a-btn')])]));
   }
@@ -263,7 +250,7 @@
       el('li', { text: 'Choose New form, name it "Intro call requests", and confirm the email address.' }),
       el('li', { text: 'Copy the form link. It looks like https://formspree.io/f/abcdwxyz. Paste it below.' }),
       el('li', { text: 'Copy the page address of the form\'s Submissions list as well, and paste it into the second box so the Open entries button works.' }),
-      el('li', { text: 'Press Save, then Publish, then Send a test entry to check it arrives.' })])]));
+      el('li', { text: 'Press Save, then Send a test entry to check it arrives.' })])]));
     var ep = input('url', st.formEndpoint || '', { maxlength: '480', placeholder: 'https://formspree.io/f/...', inputmode: 'url', autocomplete: 'off' });
     var en = input('url', st.entriesUrl || '', { maxlength: '480', placeholder: 'https://formspree.io/forms/.../submissions', inputmode: 'url', autocomplete: 'off' });
     var msg = el('p', { 'class': 'a-msg', role: 'alert' });
@@ -276,7 +263,7 @@
           if (ep.value.trim() && !S.url(ep.value)) { msg.textContent = 'The form link must start with https://'; return; }
           if (en.value.trim() && !S.url(en.value)) { msg.textContent = 'The entries page must start with https://'; return; }
           var n = getSettings(); n.formEndpoint = S.url(ep.value); n.entriesUrl = S.url(en.value); putSettings(n);
-          say('Saved as a draft. Press Publish to turn it on for the live site.'); renderPanel();
+          say('Saved.'); renderPanel();
         }, 'btn btn-primary'),
         btn('Send a test entry', function () {
           var u = S.url(ep.value); if (!u) { msg.textContent = 'Enter a full https:// form link first.'; return; }
@@ -286,60 +273,6 @@
             .catch(function () { msg.className = 'a-msg'; msg.textContent = 'The test did not go through. Check the form link.'; });
         }, 'a-btn')].concat(S.url(en.value || st.entriesUrl || '') ? [btn('Open entries', function () { var v = S.url(en.value); if (v) window.open(v, '_blank', 'noopener'); }, 'a-btn')] : []))]));
     p.appendChild(el('p', { 'class': 'a-fine', text: 'Entries are kept by the form service, not by this website. Free plans have a monthly limit, so check the service\'s plan page. Calendly bookings are listed in Calendly itself.' }));
-  }
-
-  /* ---------- PUBLISH ---------- */
-  function pollLive(stamp, n) {
-    S.fetchLive(true).then(function (raw) {
-      if (raw && raw.updated === stamp) { setNote('Live now. Visitors can see your changes (they may need to refresh the page).'); return; }
-      if ((n || 0) >= 30) { setNote('Published. The live site is still updating; check the live page again in a few minutes.'); return; }
-      setTimeout(function () { pollLive(stamp, (n || 0) + 1); }, 6000);
-    });
-  }
-  function publishPanel(p) {
-    head(p, 'Publish', 'Saving keeps your changes as a draft in this browser. Publishing sends them to the live site so every visitor sees them.');
-    var ch = S.changes(), tok = S.token();
-    p.appendChild(el('div', { 'class': 'pub-status' }, [
-      el('strong', { text: ch.length ? 'Ready to publish' : 'Nothing to publish' }),
-      el('p', { 'class': 'a-fine', text: ch.length ? 'Changed since the live site: ' + ch.map(function (k) { return NAMES[k]; }).join(', ') + '.' : 'The live site already matches your saved changes.' })]));
-
-    p.appendChild(el('h3', { text: 'Publishing key' }));
-    if (tok) {
-      p.appendChild(el('p', { 'class': 'a-fine', text: 'A publishing key is saved in this browser (ends in ' + tok.slice(-4) + '). Anyone using this browser while logged in can publish.' }));
-      p.appendChild(el('div', { 'class': 'a-actions' }, [btn('Remove key from this browser', function () { S.clearToken(); setNote(''); renderPanel(); say('Key removed.'); }, 'a-btn a-btn-quiet')]));
-    } else {
-      p.appendChild(el('p', { 'class': 'a-fine', text: 'Publishing needs a publishing key. Your web developer creates it once and gives it to you. It is what really protects the live site: without it nobody can publish, whatever password they know. Treat it like a password.' }));
-      var k = input('password', '', { autocomplete: 'off', spellcheck: 'false', 'aria-describedby': 'k-msg' }), rem = el('input', { type: 'checkbox', id: 'k-rem' });
-      var kmsg = el('p', { 'class': 'a-msg', role: 'alert', id: 'k-msg' });
-      p.appendChild(el('div', { 'class': 'add-form' }, [field('Publishing key', k, 'k-in'),
-        el('label', { 'class': 'a-check', 'for': 'k-rem' }, [rem, el('span', { text: 'Remember on this computer (only on a computer you trust)' })]), kmsg,
-        btn('Save key', function () {
-          var v = k.value.trim(); kmsg.textContent = ''; kmsg.className = 'a-msg';
-          if (v.length < 20) { kmsg.textContent = 'Paste the whole publishing key.'; return; }
-          kmsg.textContent = 'Checking…';
-          S.checkToken(v).then(function () { S.saveToken(v, rem.checked); renderPanel(); say('Key saved.'); }).catch(function (e) { kmsg.textContent = e.message || 'Could not check the key. Are you online?'; });
-        }, 'btn btn-primary')]));
-    }
-
-    p.appendChild(el('h3', { text: 'Publish' }));
-    var msg = el('p', { 'class': 'a-msg' + (note.bad || !note.text ? '' : ' ok'), id: 'pub-msg', role: 'status', 'aria-live': 'polite', text: note.text });
-    var go = btn('Publish to live site', function () {
-      if (!confirm('Publish ' + ch.map(function (k) { return NAMES[k]; }).join(', ') + ' to the live site? Every visitor will see it.')) return;
-      go.disabled = true; setNote('Publishing…');
-      S.publish(S.token(), me.email, function () { return confirm('The live site was changed by someone else after you opened Admin. Publishing now replaces their changes. Continue?'); })
-        .then(function (payload) { setNote('Published. The live site is updating, which takes about a minute. Checking…'); renderPanel(); pollLive(payload.updated); })
-        .catch(function (e) {
-          if (e && e.cancelled) setNote('Cancelled. Nothing was changed.'); else if (e && e.status === 401) { S.clearToken(); setNote(e.message + ' It was removed; add a new one.', true); }
-          else setNote((e && e.message) || 'Could not publish. Check your connection and try again.', true);
-          renderPanel();
-        });
-    }, 'btn btn-primary');
-    go.disabled = !ch.length || !tok;
-    var acts = [go];
-    if (ch.length) acts.push(btn('Discard unpublished changes', function () { if (confirm('Throw away your saved draft and go back to what is live?')) { S.discardDraft(); setNote(''); renderPanel(); say('Draft discarded.'); } }, 'a-btn a-btn-quiet'));
-    p.appendChild(el('div', { 'class': 'a-actions' }, acts)); p.appendChild(msg);
-    if (!tok) p.appendChild(el('p', { 'class': 'a-fine', text: 'Add the publishing key above to turn on the Publish button.' }));
-    p.appendChild(el('p', { 'class': 'a-fine', text: 'Every publish is saved as a version, so an earlier version can always be brought back. Admin accounts and passwords stay in this browser and are never published.' }));
   }
 
   /* ---------- ADMINS ---------- */
