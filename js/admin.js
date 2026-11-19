@@ -68,6 +68,7 @@
       b.addEventListener('click', function () { tab = t[0]; renderTabs(); renderPanel(); });
       nav.appendChild(b);
     });
+    var sel = nav.querySelector('[aria-selected="true"]'); if (sel) nav.scrollLeft = Math.max(0, sel.offsetLeft - 16);   /* keep the chosen tab in view inside the row, without moving the page */
   }
   function renderPanel() {
     var p = $('#panel'); p.textContent = ''; touch(); if (!can(tab)) tab = firstAllowed();
