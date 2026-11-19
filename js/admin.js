@@ -45,7 +45,7 @@
   }
 
   /* ---------- tabs ---------- */
-  var TABS = [['colors', 'Colors'], ['services', 'Services'], ['faq', 'FAQ'], ['team', 'Team'], ['testimonials', 'Testimonials'], ['calendly', 'Calendly'], ['entries', 'Intro call entries'], ['admins', 'Admins'], ['account', 'Account']];
+  var TABS = [['colors', 'Colors'], ['services', 'Services'], ['faq', 'FAQ'], ['team', 'Team'], ['testimonials', 'Testimonials'], ['calendly', 'Calendly'], ['entries', 'Intro call entries'], ['account', 'Account & admins']];
   /* What each admin may edit. An admin saved without a list (the built-in ones) has full access. */
   var PERMS = [['colors', 'Colors'], ['services', 'Services'], ['faq', 'FAQ'], ['team', 'Team'], ['testimonials', 'Testimonials'], ['calendly', 'Calendly link'], ['entries', 'Intro call entries'], ['admins', 'Manage admins']];
   function allows(person, key) { return !person.perms || person.perms.indexOf(key) !== -1; }
@@ -71,7 +71,7 @@
   }
   function renderPanel() {
     var p = $('#panel'); p.textContent = ''; touch(); if (!can(tab)) tab = firstAllowed();
-    ({ colors: colorsPanel, services: servicesPanel, faq: faqPanel, team: teamPanel, testimonials: testimonialsPanel, calendly: calendlyPanel, entries: entriesPanel, admins: adminsPanel, account: accountPanel })[tab](p);
+    ({ colors: colorsPanel, services: servicesPanel, faq: faqPanel, team: teamPanel, testimonials: testimonialsPanel, calendly: calendlyPanel, entries: entriesPanel, account: accountPanel })[tab](p);
   }
   function head(p, title, text) { p.appendChild(el('h2', { text: title })); if (text) p.appendChild(el('p', { 'class': 'a-lede', text: text })); }
 
@@ -290,46 +290,7 @@
     p.appendChild(el('p', { 'class': 'a-fine', text: 'Entries are kept by the form service, not by this website. Free plans have a monthly limit, so check the service\'s plan page. Calendly bookings are listed in Calendly itself.' }));
   }
 
-  /* ---------- ADMINS ---------- */
-  function adminsPanel(p) {
-    head(p, 'Admins', 'People who can log in here, and which parts of the site each one may edit. A new admin gets a temporary password and must choose their own at first log in.');
-    var list = S.admins();
-    var ul = el('ul', { 'class': 'admin-list' });
-    list.forEach(function (a) {
-      var li = el('li', {}, [el('span', {}, [el('strong', { text: a.name }), el('span', { 'class': 'a-fine', text: ' ' + a.email + (a.email === me.email ? ' (you)' : '') + (a.mustChange ? ' · has not chosen a password yet' : '') }), el('span', { 'class': 'a-fine perm-sum', text: accessText(a) })])]);
-      if (a.email !== me.email) {
-        var pb = permBoxes(a.perms || PERMS.map(function (x) { return x[0]; }), 'pe' + a.id + '-');
-        var saveB = btn('Save access', function () { a.perms = pb.get(); S.set('admins', list); renderPanel(); say('Access updated for ' + a.name + '.'); }, 'btn btn-primary');
-        li.appendChild(el('details', { 'class': 'perm-edit' }, [el('summary', { text: 'Edit access' }), pb.node, saveB]));
-        var rp = input('password', '', { autocomplete: 'new-password', maxlength: '100' }), rmsg = el('p', { 'class': 'a-msg', role: 'alert' });
-        var rpid = 'rp' + a.id;
-        var resetB = btn('Set temporary password', function () {
-          rmsg.textContent = ''; var bad = pwProblem(rp.value, { email: a.email }); if (bad) { rmsg.textContent = bad; return; }
-          S.hash(rp.value).then(function (h) { a.pw = h; a.mustChange = true; S.set('admins', list); renderPanel(); say('Password reset for ' + a.name + '. They must choose a new one at their next log in.'); });
-        }, 'btn btn-primary');
-        li.appendChild(el('details', { 'class': 'perm-edit' }, [el('summary', { text: 'Reset password' }), field('Temporary password', rp, rpid, 'At least 10 characters with letters and a number. Share it privately. They must choose their own when they next log in.'), rmsg, resetB]));
-      }
-      if (a.email !== me.email) li.appendChild(btn('Remove', function () { if (confirm('Remove ' + a.name + ' as an admin?')) { S.set('admins', list.filter(function (x) { return x.email !== a.email; })); renderPanel(); say('Admin removed.'); } }, 'a-btn a-btn-danger'));
-      ul.appendChild(li);
-    });
-    p.appendChild(ul);
-    p.appendChild(el('h3', { text: 'Add an admin' }));
-    var n = input('text', '', { maxlength: '80', autocomplete: 'off' }), e = input('email', '', { maxlength: '120', autocomplete: 'off' }), t = input('password', '', { autocomplete: 'new-password' });
-    var msg = el('p', { 'class': 'a-msg', role: 'alert' });
-    var addPerms = permBoxes(PERMS.filter(function (x) { return x[0] !== 'admins'; }).map(function (x) { return x[0]; }), 'pn-');
-    var form = el('form', { novalidate: 'novalidate', 'class': 'add-form' }, [field('Name', n, 'an'), field('Email', e, 'ae'), field('Temporary password', t, 'at', 'At least 10 characters with letters and a number. Share it privately.'), addPerms.node, msg, el('button', { 'class': 'btn btn-primary', type: 'submit', text: 'Add admin' })]);
-    form.addEventListener('submit', function (ev) {
-      ev.preventDefault(); msg.textContent = '';
-      var name = n.value.trim(), email = e.value.trim().toLowerCase();
-      if (!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { msg.textContent = 'Enter a name and a valid email.'; return; }
-      if (list.some(function (a) { return a.email === email; })) { msg.textContent = 'That email is already an admin.'; return; }
-      var bad = pwProblem(t.value, { email: email }); if (bad) { msg.textContent = bad; return; }
-      S.hash(t.value).then(function (h) { list.push({ id: 'a' + Date.now(), name: name, email: email, pw: h, mustChange: true, perms: addPerms.get() }); S.set('admins', list); renderPanel(); say('Admin added.'); });
-    });
-    p.appendChild(form);
-  }
-
-  /* ---------- ACCOUNT ---------- */
+  /* ---------- ACCOUNT & ADMINS (one tab, folding sections) ---------- */
   function pwForm(form, forced, done) {
     var cur = input('password', '', { autocomplete: 'current-password' }), nw = input('password', '', { autocomplete: 'new-password' }), cf = input('password', '', { autocomplete: 'new-password' });
     var msg = el('p', { 'class': 'a-msg', role: 'alert' });
@@ -347,21 +308,65 @@
       });
     });
   }
+  function fold(summaryKids, bodyKids, open) {
+    var d = el('details', { 'class': 'fold' }, [el('summary', {}, summaryKids), el('div', { 'class': 'fold-body' }, bodyKids)]); if (open) d.open = true; return d;
+  }
+  function chipText(person) { return isFull(person) ? 'Full access' : (person.perms.length ? person.perms.length + ' of ' + PERMS.length + ' areas' : 'View only'); }
+  function userFold(a, list) {
+    var you = a.email === me.email;
+    var sum = [el('span', { 'class': 'u-name', text: a.name }), el('span', { 'class': 'a-fine', text: a.email + (you ? ' (you)' : '') + (a.mustChange ? ' · has not chosen a password yet' : '') }), el('span', { 'class': 'u-chip', text: chipText(a) })];
+    if (you) return fold(sum, [el('p', { 'class': 'a-fine', text: 'This is you. Change your own password under "My account" above.' })]);
+    var pb = permBoxes(a.perms || PERMS.map(function (x) { return x[0]; }), 'pe' + a.id + '-');
+    var saveB = btn('Save access', function () { a.perms = pb.get(); S.set('admins', list); renderPanel(); say('Access updated for ' + a.name + '.'); }, 'btn btn-primary');
+    var rp = input('password', '', { autocomplete: 'new-password', maxlength: '100' }), rmsg = el('p', { 'class': 'a-msg', role: 'alert' });
+    var resetB = btn('Set temporary password', function () {
+      rmsg.textContent = ''; var bad = pwProblem(rp.value, { email: a.email }); if (bad) { rmsg.textContent = bad; return; }
+      S.hash(rp.value).then(function (h) { a.pw = h; a.mustChange = true; S.set('admins', list); renderPanel(); say('Password reset for ' + a.name + '. They must choose a new one at their next log in.'); });
+    }, 'btn btn-primary');
+    var rem = btn('Remove ' + a.name, function () { if (confirm('Remove ' + a.name + ' as an admin?')) { S.set('admins', list.filter(function (x) { return x.email !== a.email; })); renderPanel(); say('Admin removed.'); } }, 'a-btn a-btn-danger');
+    return fold(sum, [
+      el('div', { 'class': 'sub' }, [pb.node, saveB]),
+      el('div', { 'class': 'sub' }, [el('h4', { text: 'Reset password' }), field('Temporary password', rp, 'rp' + a.id, 'At least 10 characters with letters and a number. Share it privately. They must choose their own at next log in.'), rmsg, resetB]),
+      el('div', { 'class': 'a-actions' }, [rem])]);
+  }
+  function addAdminFold(list) {
+    var n = input('text', '', { maxlength: '80', autocomplete: 'off' }), e = input('email', '', { maxlength: '120', autocomplete: 'off' }), t = input('password', '', { autocomplete: 'new-password' });
+    var msg = el('p', { 'class': 'a-msg', role: 'alert' });
+    var addPerms = permBoxes(PERMS.filter(function (x) { return x[0] !== 'admins'; }).map(function (x) { return x[0]; }), 'pn-');
+    var form = el('form', { novalidate: 'novalidate', 'class': 'add-form' }, [field('Name', n, 'an'), field('Email', e, 'ae'), field('Temporary password', t, 'at', 'At least 10 characters with letters and a number. Share it privately.'), addPerms.node, msg, el('button', { 'class': 'btn btn-primary', type: 'submit', text: 'Add admin' })]);
+    form.addEventListener('submit', function (ev) {
+      ev.preventDefault(); msg.textContent = '';
+      var name = n.value.trim(), email = e.value.trim().toLowerCase();
+      if (!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { msg.textContent = 'Enter a name and a valid email.'; return; }
+      if (list.some(function (x) { return x.email === email; })) { msg.textContent = 'That email is already an admin.'; return; }
+      var bad = pwProblem(t.value, { email: email }); if (bad) { msg.textContent = bad; return; }
+      S.hash(t.value).then(function (h) { list.push({ id: 'a' + Date.now(), name: name, email: email, pw: h, mustChange: true, perms: addPerms.get() }); S.set('admins', list); renderPanel(); say('Admin added.'); });
+    });
+    return fold([el('span', { 'class': 'u-name', text: 'Add an admin' })], [form]);
+  }
   function accountPanel(p) {
-    head(p, 'Account', 'Signed in as ' + me.name + ' (' + me.email + ').');
-    p.appendChild(el('h3', { text: 'Change your password' }));
-    var f = el('form', { novalidate: 'novalidate', 'class': 'add-form' }); pwForm(f, false, function () { f.reset(); }); p.appendChild(f);
-    p.appendChild(el('h3', { text: 'Backup' }));
-    p.appendChild(el('p', { 'class': 'a-fine', text: 'Download your draft and admin list to keep a copy or move them to another browser. Passwords are included only as scrambled hashes. The live site keeps its own saved versions.' }));
+    head(p, 'Account & admins', 'Signed in as ' + me.name + ' (' + me.email + ').');
+    p.appendChild(el('h3', { text: 'My account' }));
+    var f = el('form', { novalidate: 'novalidate', 'class': 'add-form' }); pwForm(f, false, function () { f.reset(); });
     var imp = el('input', { type: 'file', accept: 'application/json', 'aria-label': 'Import a backup file' });
     imp.addEventListener('change', function () {
-      var f = imp.files[0]; if (!f) return; var r = new FileReader();
+      var fl = imp.files[0]; if (!fl) return; var r = new FileReader();
       r.onload = function () { try { S.importAll(r.result); say('Backup restored.'); renderPanel(); } catch (e) { say('That file is not a valid backup.', true); } };
-      r.readAsText(f);
+      r.readAsText(fl);
     });
-    p.appendChild(el('div', { 'class': 'a-actions' }, [btn('Download backup', function () {
-      var a = el('a', { href: URL.createObjectURL(new Blob([S.exportAll()], { type: 'application/json' })), download: 'elevate-site-backup.json' }); document.body.appendChild(a); a.click(); a.remove();
-    }, 'a-btn'), imp]));
+    p.appendChild(el('div', { 'class': 'fold-list' }, [
+      fold([el('span', { 'class': 'u-name', text: 'Change my password' })], [f]),
+      fold([el('span', { 'class': 'u-name', text: 'Backup and restore' })], [
+        el('p', { 'class': 'a-fine', text: 'Download your saved edits and admin list to keep a copy or move them to another browser. Passwords are included only as scrambled hashes.' }),
+        el('div', { 'class': 'a-actions' }, [btn('Download backup', function () {
+          var a = el('a', { href: URL.createObjectURL(new Blob([S.exportAll()], { type: 'application/json' })), download: 'elevate-site-backup.json' }); document.body.appendChild(a); a.click(); a.remove();
+        }, 'a-btn'), imp])])]));
+    if (can('admins')) {
+      var list = S.admins();
+      p.appendChild(el('h3', { text: 'Admins' }));
+      p.appendChild(el('p', { 'class': 'a-fine', text: 'Open a person to change what they can edit, reset their password or remove them.' }));
+      p.appendChild(el('div', { 'class': 'fold-list' }, list.map(function (a) { return userFold(a, list); }).concat([addAdminFold(list)])));
+    }
   }
 
   /* ---------- login flow ---------- */

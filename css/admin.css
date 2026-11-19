@@ -74,3 +74,17 @@
 .perm-edit { flex-basis: 100%; background: #fff; border-radius: var(--r-md); padding: 0.7rem 1rem; display: grid; gap: 0.7rem; }
 .perm-edit summary { cursor: pointer; font-weight: 650; font-size: var(--t-small); }
 .perm-edit .btn { justify-self: start; }
+.fold-list { display: grid; gap: 0.7rem; }
+.fold { background: var(--tint); border-radius: var(--r-md); }
+.fold > summary { list-style: none; cursor: pointer; display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem 0.9rem; padding: 0.9rem 1.1rem; font-weight: 650; min-height: 48px; }
+.fold > summary::-webkit-details-marker { display: none; }
+.fold > summary::before { content: ""; flex: none; width: 0.55rem; height: 0.55rem; border-right: 2.5px solid var(--navy); border-bottom: 2.5px solid var(--navy); transform: rotate(-45deg); transition: transform 0.2s; margin-right: 0.15rem; }
+.fold[open] > summary::before { transform: rotate(45deg); }
+.fold > summary:focus-visible { outline: 3px solid var(--teal-strong); outline-offset: 2px; border-radius: var(--r-md); }
+.fold-body { padding: 0 1.1rem 1.1rem; display: grid; gap: 1rem; }
+.u-name { font-weight: 700; }
+.u-chip { margin-left: auto; font-size: var(--t-small); font-weight: 600; background: #fff; border-radius: 999px; padding: 0.15rem 0.75rem; }
+.sub { background: #fff; border-radius: var(--r-md); padding: 1rem 1.1rem; display: grid; gap: 0.8rem; }
+.sub h4 { font-size: 1rem; margin: 0; }
+.sub .btn { justify-self: start; }
+@media (prefers-reduced-motion: reduce) { .fold > summary::before { transition: none; } }
