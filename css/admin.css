@@ -68,3 +68,9 @@
 .a-check { display: flex; gap: 0.6rem; align-items: center; font-size: var(--t-small); }
 .a-check input { width: 22px; height: 22px; }
 .a-btn:disabled, .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.perm-sum { display: block; }
+.perm-set { border: 0; padding: 0; margin: 0; display: grid; gap: 0.5rem; }
+.perm-set legend { font-weight: 650; font-size: var(--t-small); padding: 0; margin-bottom: 0.3rem; }
+.perm-edit { flex-basis: 100%; background: #fff; border-radius: var(--r-md); padding: 0.7rem 1rem; display: grid; gap: 0.7rem; }
+.perm-edit summary { cursor: pointer; font-weight: 650; font-size: var(--t-small); }
+.perm-edit .btn { justify-self: start; }

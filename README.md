@@ -20,7 +20,7 @@ One-page marketing site for Elevate HR Solutions (Chelsea Shumaker, PHR, Tampa, 
 
 ## Admin (preview only)
 
-`admin.html` (footer "Admin" link) lets the owner try editing section colors, services, FAQ, team, testimonials (with links), the Calendly link, a form-service link, other admins and their password.
+`admin.html` (footer "Admin" link) lets the owner try editing section colors, services, FAQ, team, testimonials (with links), the Calendly link, a form-service link, other admins (each with their own list of tabs they may edit, and a password reset) and their password.
 
 Edits are saved in the browser where they were made, so they are **not** shown to visitors. Publishing to the live site was built and then removed (git history: commit `ec794c0` and the Publish tab in `9b1b284`) because the site is expected to move to Wix, where the owner edits directly in Wix. Until then, set the Calendly link and form endpoint in `js/main.js` (`CALENDLY_URL`, `FORM_ENDPOINT`).
 

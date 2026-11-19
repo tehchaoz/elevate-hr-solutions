@@ -46,16 +46,31 @@
 
   /* ---------- tabs ---------- */
   var TABS = [['colors', 'Colors'], ['services', 'Services'], ['faq', 'FAQ'], ['team', 'Team'], ['testimonials', 'Testimonials'], ['calendly', 'Calendly'], ['entries', 'Intro call entries'], ['admins', 'Admins'], ['account', 'Account']];
+  /* What each admin may edit. An admin saved without a list (the built-in ones) has full access. */
+  var PERMS = [['colors', 'Colors'], ['services', 'Services'], ['faq', 'FAQ'], ['team', 'Team'], ['testimonials', 'Testimonials'], ['calendly', 'Calendly link'], ['entries', 'Intro call entries'], ['admins', 'Manage admins']];
+  function allows(person, key) { return !person.perms || person.perms.indexOf(key) !== -1; }
+  function can(key) { return key === 'account' || (me && allows(me, key)); }
+  function isFull(person) { return !person.perms || PERMS.every(function (x) { return person.perms.indexOf(x[0]) !== -1; }); }
+  function accessText(person) { return isFull(person) ? 'Full access' : (person.perms.length ? 'Can edit: ' + PERMS.filter(function (x) { return person.perms.indexOf(x[0]) !== -1; }).map(function (x) { return x[1]; }).join(', ') : 'View only'); }
+  function permBoxes(selected, prefix) {
+    var boxes = [], fs = el('fieldset', { 'class': 'perm-set' }, [el('legend', { text: 'What they can edit' })]);
+    PERMS.forEach(function (x, i) {
+      var cb = el('input', { type: 'checkbox', id: prefix + i, value: x[0] }); cb.checked = selected.indexOf(x[0]) !== -1; boxes.push(cb);
+      fs.appendChild(el('label', { 'class': 'a-check', 'for': prefix + i }, [cb, el('span', { text: x[1] + (x[0] === 'admins' ? ' (add and remove admins, change what they can edit)' : '') })]));
+    });
+    return { node: fs, get: function () { return boxes.filter(function (b) { return b.checked; }).map(function (b) { return b.value; }); } };
+  }
+  function firstAllowed() { for (var i = 0; i < TABS.length; i++) if (can(TABS[i][0])) return TABS[i][0]; return 'account'; }
   function renderTabs() {
-    var nav = $('#tabs'); nav.textContent = '';
-    TABS.forEach(function (t) {
+    var nav = $('#tabs'); nav.textContent = ''; if (!can(tab)) tab = firstAllowed();
+    TABS.filter(function (t) { return can(t[0]); }).forEach(function (t) {
       var b = el('button', { type: 'button', role: 'tab', 'aria-selected': String(tab === t[0]), 'class': 'a-tab', text: t[1] });
       b.addEventListener('click', function () { tab = t[0]; renderTabs(); renderPanel(); });
       nav.appendChild(b);
     });
   }
   function renderPanel() {
-    var p = $('#panel'); p.textContent = ''; touch();
+    var p = $('#panel'); p.textContent = ''; touch(); if (!can(tab)) tab = firstAllowed();
     ({ colors: colorsPanel, services: servicesPanel, faq: faqPanel, team: teamPanel, testimonials: testimonialsPanel, calendly: calendlyPanel, entries: entriesPanel, admins: adminsPanel, account: accountPanel })[tab](p);
   }
   function head(p, title, text) { p.appendChild(el('h2', { text: title })); if (text) p.appendChild(el('p', { 'class': 'a-lede', text: text })); }
@@ -277,11 +292,23 @@
 
   /* ---------- ADMINS ---------- */
   function adminsPanel(p) {
-    head(p, 'Admins', 'People who can log in here. A new admin gets a temporary password and must choose their own at first log in.');
+    head(p, 'Admins', 'People who can log in here, and which parts of the site each one may edit. A new admin gets a temporary password and must choose their own at first log in.');
     var list = S.admins();
     var ul = el('ul', { 'class': 'admin-list' });
     list.forEach(function (a) {
-      var li = el('li', {}, [el('span', {}, [el('strong', { text: a.name }), el('span', { 'class': 'a-fine', text: ' ' + a.email + (a.email === me.email ? ' (you)' : '') + (a.mustChange ? ' · has not chosen a password yet' : '') })])]);
+      var li = el('li', {}, [el('span', {}, [el('strong', { text: a.name }), el('span', { 'class': 'a-fine', text: ' ' + a.email + (a.email === me.email ? ' (you)' : '') + (a.mustChange ? ' · has not chosen a password yet' : '') }), el('span', { 'class': 'a-fine perm-sum', text: accessText(a) })])]);
+      if (a.email !== me.email) {
+        var pb = permBoxes(a.perms || PERMS.map(function (x) { return x[0]; }), 'pe' + a.id + '-');
+        var saveB = btn('Save access', function () { a.perms = pb.get(); S.set('admins', list); renderPanel(); say('Access updated for ' + a.name + '.'); }, 'btn btn-primary');
+        li.appendChild(el('details', { 'class': 'perm-edit' }, [el('summary', { text: 'Edit access' }), pb.node, saveB]));
+        var rp = input('password', '', { autocomplete: 'new-password', maxlength: '100' }), rmsg = el('p', { 'class': 'a-msg', role: 'alert' });
+        var rpid = 'rp' + a.id;
+        var resetB = btn('Set temporary password', function () {
+          rmsg.textContent = ''; var bad = pwProblem(rp.value, { email: a.email }); if (bad) { rmsg.textContent = bad; return; }
+          S.hash(rp.value).then(function (h) { a.pw = h; a.mustChange = true; S.set('admins', list); renderPanel(); say('Password reset for ' + a.name + '. They must choose a new one at their next log in.'); });
+        }, 'btn btn-primary');
+        li.appendChild(el('details', { 'class': 'perm-edit' }, [el('summary', { text: 'Reset password' }), field('Temporary password', rp, rpid, 'At least 10 characters with letters and a number. Share it privately. They must choose their own when they next log in.'), rmsg, resetB]));
+      }
       if (a.email !== me.email) li.appendChild(btn('Remove', function () { if (confirm('Remove ' + a.name + ' as an admin?')) { S.set('admins', list.filter(function (x) { return x.email !== a.email; })); renderPanel(); say('Admin removed.'); } }, 'a-btn a-btn-danger'));
       ul.appendChild(li);
     });
@@ -289,14 +316,15 @@
     p.appendChild(el('h3', { text: 'Add an admin' }));
     var n = input('text', '', { maxlength: '80', autocomplete: 'off' }), e = input('email', '', { maxlength: '120', autocomplete: 'off' }), t = input('password', '', { autocomplete: 'new-password' });
     var msg = el('p', { 'class': 'a-msg', role: 'alert' });
-    var form = el('form', { novalidate: 'novalidate', 'class': 'add-form' }, [field('Name', n, 'an'), field('Email', e, 'ae'), field('Temporary password', t, 'at', 'At least 10 characters with letters and a number. Share it privately.'), msg, el('button', { 'class': 'btn btn-primary', type: 'submit', text: 'Add admin' })]);
+    var addPerms = permBoxes(PERMS.filter(function (x) { return x[0] !== 'admins'; }).map(function (x) { return x[0]; }), 'pn-');
+    var form = el('form', { novalidate: 'novalidate', 'class': 'add-form' }, [field('Name', n, 'an'), field('Email', e, 'ae'), field('Temporary password', t, 'at', 'At least 10 characters with letters and a number. Share it privately.'), addPerms.node, msg, el('button', { 'class': 'btn btn-primary', type: 'submit', text: 'Add admin' })]);
     form.addEventListener('submit', function (ev) {
       ev.preventDefault(); msg.textContent = '';
       var name = n.value.trim(), email = e.value.trim().toLowerCase();
       if (!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { msg.textContent = 'Enter a name and a valid email.'; return; }
       if (list.some(function (a) { return a.email === email; })) { msg.textContent = 'That email is already an admin.'; return; }
       var bad = pwProblem(t.value, { email: email }); if (bad) { msg.textContent = bad; return; }
-      S.hash(t.value).then(function (h) { list.push({ id: 'a' + Date.now(), name: name, email: email, pw: h, mustChange: true }); S.set('admins', list); renderPanel(); say('Admin added.'); });
+      S.hash(t.value).then(function (h) { list.push({ id: 'a' + Date.now(), name: name, email: email, pw: h, mustChange: true, perms: addPerms.get() }); S.set('admins', list); renderPanel(); say('Admin added.'); });
     });
     p.appendChild(form);
   }
