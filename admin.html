@@ -32,12 +32,13 @@
     <p class="a-msg" id="login-msg" role="alert"></p>
     <button class="btn btn-primary" type="submit">Log in</button>
   </form>
-  <p class="a-fine">Demo admin: changes are saved in this browser only. See the notice inside once you are logged in.</p>
+  <p class="a-fine">For the site owner and the team members they add.</p>
 </section>
 
 <!-- APP -->
 <div id="app" hidden>
-  <div class="admin-notice" role="note"><strong>Demo mode.</strong> Edits are saved in this browser only, so they show on this computer but not to visitors of the live site. The password only guards this screen. Real protection and live publishing need a server.</div>
+  <div class="admin-notice" role="note"><strong>How this works.</strong> Press Save on any tab to keep a draft in this browser. Open the Publish tab to put your saved changes on the live site for everyone. The password only guards this screen; the publishing key is what really protects the live site.</div>
+  <div class="admin-notice pubbar" id="pubbar" role="status" hidden></div>
 
   <section id="force" class="admin-card" hidden aria-labelledby="force-h">
     <h2 id="force-h">Choose a new password</h2>

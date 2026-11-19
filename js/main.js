@@ -56,20 +56,19 @@
   onScroll();
 
   /* Services accordion (single open; the open panel can be closed) */
-  var items = $$('.svc');
-  items.forEach(function (item) {
-    var btn = $('button', item);
-    btn.addEventListener('click', function () {
-      var willOpen = !item.classList.contains('is-open');
-      items.forEach(function (o) {
-        o.classList.remove('is-open');
-        $('button', o).setAttribute('aria-expanded', 'false');
-      });
-      if (willOpen) {
-        item.classList.add('is-open');
-        btn.setAttribute('aria-expanded', 'true');
-      }
+  /* Delegated, so the list keeps working when published content replaces it. */
+  var svcList = $('.svc-list');
+  if (svcList) svcList.addEventListener('click', function (e) {
+    var btn = e.target.closest('button'); if (!btn || !svcList.contains(btn)) return;
+    var item = btn.closest('.svc'), willOpen = !item.classList.contains('is-open');
+    $$('.svc', svcList).forEach(function (o) {
+      o.classList.remove('is-open');
+      $('button', o).setAttribute('aria-expanded', 'false');
     });
+    if (willOpen) {
+      item.classList.add('is-open');
+      btn.setAttribute('aria-expanded', 'true');
+    }
   });
 
   /* Scroll reveals */

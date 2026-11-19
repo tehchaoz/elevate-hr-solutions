@@ -1,8 +1,14 @@
 /* Elevate HR Solutions: content store + public-page rendering.
-   DEMO: edits are saved in this browser (localStorage) only. See README. */
+   Published content lives in content.json (committed to the GitHub repo by the Admin Publish button, then served by
+   GitHub Pages). Admin edits are a draft in this browser until published. See README. */
 (function () {
   'use strict';
-  var KEY = 'elevate.content.v1';
+  var KEY = 'elevate.content.v1';      /* admin working copy (draft), this browser only */
+  var LIVEKEY = 'elevate.live.v1';     /* last published copy this browser saw (stops flicker) */
+  /* Where Publish writes. At launch, if the repo moves, change repo/branch here and nothing else. */
+  var CFG = { repo: 'tehchaoz/elevate-hr-solutions', branch: 'main', file: 'content.json' };
+  var SYNC = ['theme', 'services', 'faq', 'team'];   /* the only keys that are ever published */
+  var live = {}, mode = 'live';
   var DEFAULTS = {"services": [{"id": "s1", "title": "HR Infrastructure & Compliance", "items": ["Comprehensive HR audit", "Employee handbook and policy updates", "Employment law compliance and risk management", "Process development and optimization", "End-to-end M&A support"]}, {"id": "s2", "title": "Talent Acquisition & Onboarding", "items": ["Customized hiring strategies and recruiting support", "New hire orientation", "Onboarding program development"]}, {"id": "s3", "title": "Performance & Culture", "items": ["Employee engagement and retention strategies", "Team-building initiatives", "Behavioral assessments", "Performance management systems", "Coaching and leadership development", "Workforce planning and organizational design", "Customized training programs"]}, {"id": "s4", "title": "Payroll, Benefits & Operations Support", "items": ["Payroll and benefits administration", "Total compensation strategies", "Bookkeeping and administrative support"]}], "faq": [{"q": "Is the first call really free?", "a": "Yes. The introductory call is complimentary and carries absolutely no obligation."}, {"q": "What if I only need help with one thing?", "a": "That works. We can step in as a one-time project partner, such as an HR audit or a handbook update, or stay on as ongoing HR support."}, {"q": "Can you handle payroll, benefits and bookkeeping too?", "a": "Yes. Alongside HR, we offer payroll and benefits administration, total compensation strategies, and light bookkeeping and administrative support."}, {"q": "What kinds of businesses do you work with?", "a": "Our experience spans engineering, healthcare, hospitality, technology and construction, including multi-state organizations navigating growth, transformation, and increasing organizational complexity."}, {"q": "Where are you based?", "a": "Tampa, Florida. You can reach us at 317-796-7914 or chelsea@elevatehr.org."}], "team": [{"id": "owner", "name": "Chelsea Shumaker, PHR", "role": "Founder / Principal HR Consultant", "bio": "I’ve spent 22 years rolling up my sleeves in HR roles across a wide range of industries, helping organizations establish the right structure, navigate complex people challenges, and create a workplace where teams can thrive. I’m committed to helping companies build and sustain high-performing cultures while ensuring the people, processes, and HR infrastructure behind them operate effectively.", "photo": "assets/chelsea-headshot.jpg"}], "pw": "pbkdf2$200000$68a0db86aa21e964a7ab6b499bb68358$441680090adaa519bfa55533931782c8e2cf97fec6fdd7969ee9290424265032"};
 
   /* Sections whose background and text colours can be changed in Admin. */
@@ -27,16 +33,119 @@
   function read() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } }
   function write(o) { try { localStorage.setItem(KEY, JSON.stringify(o)); return true; } catch (e) { return false; } }
   function clone(x) { return JSON.parse(JSON.stringify(x)); }
+  function ok(x) { return typeof x === 'string' && /^#[0-9a-f]{6}$/i.test(x); }
+  function str(x, n) { return typeof x === 'string' ? x.slice(0, n) : ''; }
+  function stable(v) {
+    if (Array.isArray(v)) return '[' + v.map(stable).join(',') + ']';
+    if (v && typeof v === 'object') return '{' + Object.keys(v).sort().map(function (k) { return JSON.stringify(k) + ':' + stable(v[k]); }).join(',') + '}';
+    return JSON.stringify(v);
+  }
+  /* Whatever comes from content.json or a backup is checked here before it is ever rendered. */
+  function clean(o) {
+    var out = {}; if (!o || typeof o !== 'object') return out;
+    if (o.theme && typeof o.theme === 'object' && !Array.isArray(o.theme)) {
+      var t = {}; Object.keys(o.theme).forEach(function (k) {
+        var c = o.theme[k]; if (!c || typeof c !== 'object') return;
+        var r = {}; if (ok(c.bg)) r.bg = c.bg; if (ok(c.text)) r.text = c.text; if (r.bg || r.text) t[k] = r;
+      });
+      if (Object.keys(t).length) out.theme = t;
+    }
+    if (Array.isArray(o.services)) out.services = o.services.filter(function (x) { return x && typeof x.title === 'string'; }).slice(0, 30).map(function (x) {
+      return { id: str(String(x.id || ''), 40), title: str(x.title, 90), items: (Array.isArray(x.items) ? x.items : []).filter(function (i) { return typeof i === 'string'; }).slice(0, 40).map(function (i) { return str(i, 300); }) };
+    });
+    if (Array.isArray(o.faq)) out.faq = o.faq.filter(function (x) { return x && typeof x.q === 'string' && typeof x.a === 'string'; }).slice(0, 60).map(function (x) { return { q: str(x.q, 160), a: str(x.a, 1200) }; });
+    if (Array.isArray(o.team)) out.team = o.team.filter(function (x) { return x && typeof x.name === 'string'; }).slice(0, 40).map(function (x) {
+      return { id: str(String(x.id || ''), 40), name: str(x.name, 80), role: str(x.role, 90), bio: str(x.bio, 1500), photo: str(x.photo, 400000) };
+    });
+    return out;
+  }
+  function cur() { return mode === 'draft' ? read() : live; }
+  /* Set by admin.js while an admin is logged in (shared across tabs, so "View site" can preview the draft). */
+  function sessionActive() { try { return parseInt(localStorage.getItem('elevate.prev'), 10) > Date.now(); } catch (e) { return false; } }
 
   var Store = {
-    SECTIONS: SECTIONS, PALETTE: PALETTE,
-    has: function (k) { return read()[k] !== undefined; },
-    get: function (k) { var v = read()[k]; return v !== undefined ? v : (DEFAULTS[k] !== undefined ? clone(DEFAULTS[k]) : null); },
+    SECTIONS: SECTIONS, PALETTE: PALETTE, CFG: CFG,
+    has: function (k) { return cur()[k] !== undefined; },
+    get: function (k) { var v = cur()[k]; return v !== undefined ? v : (DEFAULTS[k] !== undefined ? clone(DEFAULTS[k]) : null); },
     set: function (k, v) { var o = read(); o[k] = v; return write(o); },
     reset: function (k) { var o = read(); delete o[k]; return write(o); },
     exportAll: function () { return JSON.stringify(read(), null, 2); },
-    importAll: function (txt) { var o = JSON.parse(txt); if (!o || typeof o !== 'object') throw new Error('bad'); return write(o); },
-    ok: function (x) { return /^#[0-9a-f]{6}$/i.test(x); }
+    importAll: function (txt) { var o = JSON.parse(txt); if (!o || typeof o !== 'object') throw new Error('bad'); var c = clean(o); if (Array.isArray(o.admins)) c.admins = o.admins; c.__seeded = 1; return write(c); },
+    ok: ok, useDraft: function () { mode = 'draft'; }
+  };
+
+  /* ---- published content: fetch, cache, compare ---- */
+  var cached = ''; try { cached = localStorage.getItem(LIVEKEY) || ''; } catch (e) {}
+  try { live = clean(JSON.parse(cached)); } catch (e) { live = {}; }
+  var liveStamp = ''; try { liveStamp = String((JSON.parse(cached) || {}).updated || ''); } catch (e) {}
+  Store.fetchLive = function (bust) {
+    return fetch(CFG.file + (bust ? '?v=' + Date.now() : ''), { cache: 'no-cache' })
+      .then(function (r) { if (!r.ok) throw new Error('none'); return r.text(); })
+      .then(function (txt) { return JSON.parse(txt); })
+      .catch(function () { return null; });
+  };
+  var before = stable(live);
+  Store.ready = Store.fetchLive().then(function (raw) {
+    if (!raw || typeof raw !== 'object') return { changed: false, lost: false };
+    var n = clean(raw), lost = SYNC.some(function (k) { return live[k] !== undefined && n[k] === undefined; });
+    var changed = stable(n) !== before; live = n; liveStamp = String(raw.updated || '');
+    try { localStorage.setItem(LIVEKEY, JSON.stringify(raw)); } catch (e) {}
+    return { changed: changed, lost: lost };
+  });
+  Store.liveStamp = function () { return liveStamp; };
+  Store.seedDraft = function () {
+    var o = read(); if (o.__seeded) return;
+    SYNC.forEach(function (k) { if (o[k] === undefined && live[k] !== undefined) o[k] = clone(live[k]); });
+    o.__seeded = 1; write(o);
+  };
+  /* Which published sections differ from the admin's draft. */
+  Store.changes = function () {
+    var d = clean(read()); return SYNC.filter(function (k) { return stable(d[k]) !== stable(live[k]); });
+  };
+  Store.discardDraft = function () {
+    var o = read(), n = { admins: o.admins, __seeded: 1 }; if (!n.admins) delete n.admins;
+    SYNC.forEach(function (k) { if (live[k] !== undefined) n[k] = clone(live[k]); }); return write(n);
+  };
+
+  /* ---- Publish: commit content.json to the repo through the GitHub API ---- */
+  var TKEY = 'elevate.gh';
+  Store.token = function () { try { return sessionStorage.getItem(TKEY) || localStorage.getItem(TKEY) || ''; } catch (e) { return ''; } };
+  Store.saveToken = function (t, remember) { try { sessionStorage.removeItem(TKEY); localStorage.removeItem(TKEY); (remember ? localStorage : sessionStorage).setItem(TKEY, t); return true; } catch (e) { return false; } };
+  Store.clearToken = function () { try { sessionStorage.removeItem(TKEY); localStorage.removeItem(TKEY); } catch (e) {} };
+  function gh(token) { return { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' }; }
+  function ghErr(r) {
+    var m = r.status === 401 ? 'GitHub did not accept the publishing key. It may be wrong, expired or revoked.'
+      : (r.status === 403 || r.status === 404) ? 'The publishing key is not allowed to change this site. It needs "Contents: Read and write" on the repository ' + CFG.repo + '.'
+      : r.status === 429 ? 'GitHub asked us to slow down. Try again in a minute.'
+      : 'GitHub returned an error (' + r.status + '). Nothing was changed.';
+    var e = new Error(m); e.status = r.status; return e;
+  }
+  Store.checkToken = function (token) {
+    return fetch('https://api.github.com/repos/' + CFG.repo, { headers: gh(token) }).then(function (r) { if (!r.ok) throw ghErr(r); return true; });
+  };
+  function b64(s) { var b = new TextEncoder().encode(s), o = ''; for (var i = 0; i < b.length; i += 8192) o += String.fromCharCode.apply(null, b.subarray(i, i + 8192)); return btoa(o); }
+  function unb64(c) { var bin = atob(String(c).replace(/\s/g, '')), a = new Uint8Array(bin.length); for (var i = 0; i < a.length; i++) a[i] = bin.charCodeAt(i); return new TextDecoder().decode(a); }
+  /* confirmFn(): called if someone else published since this page loaded; return false to stop. */
+  Store.publish = function (token, who, confirmFn, retried) {
+    var d = clean(read()), payload = { version: 1, updated: new Date().toISOString(), updatedBy: who };
+    SYNC.forEach(function (k) { if (d[k] !== undefined) payload[k] = d[k]; });
+    var text = JSON.stringify(payload, null, 2) + '\n';
+    if (text.length > 3000000) return Promise.reject(new Error('The content is too large to publish. Remove or shrink some team photos.'));
+    var api = 'https://api.github.com/repos/' + CFG.repo + '/contents/' + CFG.file;
+    return fetch(api + '?ref=' + encodeURIComponent(CFG.branch), { headers: gh(token), cache: 'no-store' }).then(function (r) {
+      if (r.status === 404) return { sha: null, remote: null };
+      if (!r.ok) throw ghErr(r);
+      return r.json().then(function (j) { var rm = null; try { rm = clean(JSON.parse(unb64(j.content))); } catch (e) {} return { sha: j.sha, remote: rm }; });
+    }).then(function (cur0) {
+      if (cur0.remote && stable(cur0.remote) !== stable(live) && confirmFn && !confirmFn()) { var c = new Error('cancelled'); c.cancelled = true; throw c; }
+      var body = { message: 'Admin publish by ' + who, content: b64(text), branch: CFG.branch }; if (cur0.sha) body.sha = cur0.sha;
+      return fetch(api, { method: 'PUT', headers: Object.assign({ 'Content-Type': 'application/json' }, gh(token)), body: JSON.stringify(body) });
+    }).then(function (r) {
+      if ((r.status === 409 || r.status === 422) && !retried) return Store.publish(token, who, null, true);
+      if (!r.ok) throw ghErr(r);
+      live = clean(payload); liveStamp = payload.updated; try { localStorage.setItem(LIVEKEY, JSON.stringify(payload)); } catch (e) {}
+      return payload;
+    });
   };
 
   /* ---- password hashing: salted PBKDF2, never stored as text ---- */
@@ -68,6 +177,7 @@
 
   /* ---- public pages ---- */
   function applyTheme() {
+    var prev = document.getElementById('elevate-theme'); if (prev && prev.parentNode) prev.parentNode.removeChild(prev);
     var t = Store.has('theme') ? Store.get('theme') : null; if (!t) return;
     var css = '';
     SECTIONS.forEach(function (s) {
@@ -105,8 +215,21 @@
       box.appendChild(el('article', { 'class': 'member' + (i === 0 ? ' member-lead' : '') }, [el('div', { 'class': 'member-photo' }, [img]), body]));
     });
   }
+  function renderAll() { applyTheme(); renderServices(); renderFaq(); renderTeam(); }
+  function previewBar() {
+    if (document.getElementById('preview-bar') || !Store.changes().length) return;
+    var a = el('a', { href: 'admin.html', text: 'Back to Admin' });
+    document.body.appendChild(el('div', { id: 'preview-bar', 'class': 'preview-bar', role: 'note' }, [el('span', { text: 'Previewing your unpublished edits. Visitors still see the published site.' }), a]));
+  }
   if (document.querySelector('[data-sec]') || document.querySelector('.svc-list') || document.querySelector('.faq') || document.querySelector('.team')) {
-    applyTheme(); renderServices(); renderFaq(); renderTeam();
+    if (sessionActive() && read().__seeded) mode = 'draft';
+    renderAll();
+    Store.ready.then(function (r) {
+      if (mode === 'draft') { previewBar(); return; }
+      if (!r.changed) return;
+      if (r.lost) { location.reload(); return; }   /* a section went back to the original text: reload to show it */
+      renderAll();
+    });
   }
   window.ElevateStore = Store;
 })();

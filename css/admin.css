@@ -58,3 +58,13 @@
 .a-status { background: var(--paper); padding: 0.4rem 1rem; border-radius: 999px; }
 .a-status:empty { display: none; }
 .sec-card .a-btn { justify-self: start; }
+.a-msg.ok { color: var(--teal-ink); }
+.pubbar { display: flex; flex-wrap: wrap; gap: 0.75rem 1rem; align-items: center; justify-content: space-between; background: var(--navy); color: var(--cream); font-weight: 600; margin: 0.75rem 0 1rem; }
+.pub-status { background: var(--tint); border-radius: var(--r-md); padding: 0.9rem 1.1rem; }
+.pub-status p { margin-top: 0.2rem; }
+.pub-help { background: var(--tint); border-radius: var(--r-md); padding: 0.8rem 1.1rem; font-size: var(--t-small); line-height: 1.55; margin-bottom: 1rem; }
+.pub-help summary { cursor: pointer; font-weight: 650; }
+.pub-help ol { margin: 0.7rem 0 0 1.2rem; display: grid; gap: 0.4rem; list-style: decimal; }
+.a-check { display: flex; gap: 0.6rem; align-items: center; font-size: var(--t-small); }
+.a-check input { width: 22px; height: 22px; }
+.a-btn:disabled, .btn:disabled { opacity: 0.45; cursor: not-allowed; }

@@ -1,18 +1,31 @@
-/* Elevate HR Solutions: admin screen (demo, browser-only). Needs js/store.js. */
+/* Elevate HR Solutions: admin screen. Saves a draft in this browser; Publish commits content.json to the repo. Needs js/store.js. */
 (function () {
   'use strict';
   var S = window.ElevateStore, el = S.el;
+  S.useDraft();
+  var NAMES = { theme: 'Colors', services: 'Services', faq: 'FAQ', team: 'Team' };
+  var note = { text: '', bad: false };
   function $(s, r) { return (r || document).querySelector(s); }
   var SESS = 'elevate.sess', LOCK = 'elevate.lock', TTL = 30 * 60 * 1000;
   var me = null, tab = 'colors', statusT;
 
   /* ---------- session + throttle ---------- */
   function getSess() { try { var s = JSON.parse(sessionStorage.getItem(SESS)); return s && s.exp > Date.now() ? s : null; } catch (e) { return null; } }
-  function setSess(email) { try { sessionStorage.setItem(SESS, JSON.stringify({ email: email, exp: Date.now() + TTL })); } catch (e) {} }
+  function setSess(email) { var exp = Date.now() + TTL; try { sessionStorage.setItem(SESS, JSON.stringify({ email: email, exp: exp })); localStorage.setItem('elevate.prev', String(exp)); } catch (e) {} }
   function touch() { var s = getSess(); if (s) setSess(s.email); }
   function lockState() { try { return JSON.parse(localStorage.getItem(LOCK)) || { n: 0, until: 0 }; } catch (e) { return { n: 0, until: 0 }; } }
   function setLock(o) { try { localStorage.setItem(LOCK, JSON.stringify(o)); } catch (e) {} }
-  function say(msg, bad) { var s = $('#status'); s.textContent = msg; s.className = 'a-status' + (bad ? ' bad' : ''); clearTimeout(statusT); statusT = setTimeout(function () { s.textContent = ''; }, 4000); }
+  function say(msg, bad) { var s = $('#status'); s.textContent = msg; s.className = 'a-status' + (bad ? ' bad' : ''); clearTimeout(statusT); statusT = setTimeout(function () { s.textContent = ''; }, 5000); pubBar(); }
+  function goPublish() { tab = 'publish'; renderTabs(); renderPanel(); }
+  /* The banner shown on every tab while there are saved changes that visitors cannot see yet. */
+  function pubBar() {
+    var b = $('#pubbar'); if (!b) return; var ch = S.changes(); b.textContent = '';
+    if (!ch.length || !me) { b.hidden = true; return; }
+    b.hidden = false;
+    b.appendChild(el('span', { text: 'Not live yet: ' + ch.map(function (k) { return NAMES[k]; }).join(', ') + ' changed. Visitors still see the old version.' }));
+    if (tab !== 'publish') b.appendChild(btn('Go to Publish', goPublish, 'a-btn'));
+  }
+  function setNote(text, bad) { note.text = text; note.bad = !!bad; var m = $('#pub-msg'); if (m) { m.textContent = text; m.className = 'a-msg' + (bad ? '' : ' ok'); } }
 
   /* ---------- password rules ---------- */
   function pwProblem(pw, user) {
@@ -44,7 +57,7 @@
   }
 
   /* ---------- tabs ---------- */
-  var TABS = [['colors', 'Colors'], ['services', 'Services'], ['faq', 'FAQ'], ['team', 'Team'], ['admins', 'Admins'], ['account', 'Account']];
+  var TABS = [['colors', 'Colors'], ['services', 'Services'], ['faq', 'FAQ'], ['team', 'Team'], ['publish', 'Publish'], ['admins', 'Admins'], ['account', 'Account']];
   function renderTabs() {
     var nav = $('#tabs'); nav.textContent = '';
     TABS.forEach(function (t) {
@@ -55,7 +68,8 @@
   }
   function renderPanel() {
     var p = $('#panel'); p.textContent = ''; touch();
-    ({ colors: colorsPanel, services: servicesPanel, faq: faqPanel, team: teamPanel, admins: adminsPanel, account: accountPanel })[tab](p);
+    ({ colors: colorsPanel, services: servicesPanel, faq: faqPanel, team: teamPanel, publish: publishPanel, admins: adminsPanel, account: accountPanel })[tab](p);
+    pubBar();
   }
   function head(p, title, text) { p.appendChild(el('h2', { text: title })); if (text) p.appendChild(el('p', { 'class': 'a-lede', text: text })); }
 
@@ -85,7 +99,7 @@
     p.appendChild(el('div', { 'class': 'a-actions' }, [btn('Save colors', function () {
       var clean = {}; Object.keys(theme).forEach(function (k) { var c = theme[k]; if (c && ((c.bg && S.ok(c.bg)) || (c.text && S.ok(c.text)))) clean[k] = c; });
       if (Object.keys(clean).length) S.set('theme', clean); else S.reset('theme');
-      say('Colors saved. Open the site in this browser to see them.');
+      say('Colors saved as a draft. Press Publish to put them on the live site.');
     }, 'btn btn-primary'), btn('Reset all colors', function () { if (confirm('Set every section back to its original colors?')) { S.reset('theme'); renderPanel(); say('All colors reset.'); } }, 'a-btn a-btn-quiet')]));
   }
 
@@ -107,7 +121,7 @@
     draw();
     p.appendChild(el('div', { 'class': 'a-actions' }, [
       btn('Add a service', function () { list.push({ id: 's' + Date.now(), title: '', items: [] }); draw(); }, 'a-btn'),
-      btn('Save services', function () { var ok = list.filter(function (s) { return s.title.trim(); }); if (!ok.length) { say('Keep at least one service.', true); return; } S.set('services', ok); say('Services saved.'); }, 'btn btn-primary'),
+      btn('Save services', function () { var ok = list.filter(function (s) { return s.title.trim(); }); if (!ok.length) { say('Keep at least one service.', true); return; } S.set('services', ok); say('Services saved as a draft. Press Publish to put them on the live site.'); }, 'btn btn-primary'),
       btn('Restore original', function () { if (confirm('Restore the original services list?')) { S.reset('services'); renderPanel(); } }, 'a-btn a-btn-quiet')]));
   }
 
@@ -127,7 +141,7 @@
     draw();
     p.appendChild(el('div', { 'class': 'a-actions' }, [
       btn('Add a question', function () { list.push({ q: '', a: '' }); draw(); }, 'a-btn'),
-      btn('Save FAQ', function () { var ok = list.filter(function (f) { return f.q.trim() && f.a.trim(); }); S.set('faq', ok); say('FAQ saved.'); }, 'btn btn-primary'),
+      btn('Save FAQ', function () { var ok = list.filter(function (f) { return f.q.trim() && f.a.trim(); }); S.set('faq', ok); say('FAQ saved as a draft. Press Publish to put it on the live site.'); }, 'btn btn-primary'),
       btn('Restore original', function () { if (confirm('Restore the original FAQ?')) { S.reset('faq'); renderPanel(); } }, 'a-btn a-btn-quiet')]));
   }
 
@@ -170,8 +184,69 @@
     draw();
     p.appendChild(el('div', { 'class': 'a-actions' }, [
       btn('Add a team member', function () { list.push({ id: 'm' + Date.now(), name: '', role: '', bio: '', photo: '' }); draw(); }, 'a-btn'),
-      btn('Save team', function () { var ok = list.filter(function (m, i) { return i === 0 || m.name.trim(); }); try { if (!S.set('team', ok)) throw 0; say('Team saved.'); } catch (e) { say('Could not save: the photos may be too large for this browser. Remove a photo and try again.', true); } }, 'btn btn-primary'),
+      btn('Save team', function () { var ok = list.filter(function (m, i) { return i === 0 || m.name.trim(); }); try { if (!S.set('team', ok)) throw 0; say('Team saved as a draft. Press Publish to put it on the live site.'); } catch (e) { say('Could not save: the photos may be too large for this browser. Remove a photo and try again.', true); } }, 'btn btn-primary'),
       btn('Restore original', function () { if (confirm('Restore the original team (owner only)?')) { S.reset('team'); renderPanel(); } }, 'a-btn a-btn-quiet')]));
+  }
+
+  /* ---------- PUBLISH ---------- */
+  function pollLive(stamp, n) {
+    S.fetchLive(true).then(function (raw) {
+      if (raw && raw.updated === stamp) { setNote('Live now. Visitors can see your changes (they may need to refresh the page).'); return; }
+      if ((n || 0) >= 30) { setNote('Published. GitHub is still rebuilding the site; check the live page again in a few minutes.'); return; }
+      setTimeout(function () { pollLive(stamp, (n || 0) + 1); }, 6000);
+    });
+  }
+  function publishPanel(p) {
+    head(p, 'Publish', 'Saving keeps your changes as a draft in this browser. Publishing sends them to the live site so every visitor sees them.');
+    var ch = S.changes(), tok = S.token();
+    p.appendChild(el('div', { 'class': 'pub-status' }, [
+      el('strong', { text: ch.length ? 'Ready to publish' : 'Nothing to publish' }),
+      el('p', { 'class': 'a-fine', text: ch.length ? 'Changed since the live site: ' + ch.map(function (k) { return NAMES[k]; }).join(', ') + '.' : 'The live site already matches your saved changes.' })]));
+
+    p.appendChild(el('h3', { text: 'Publishing key' }));
+    if (tok) {
+      p.appendChild(el('p', { 'class': 'a-fine', text: 'A publishing key is saved in this browser (ends in ' + tok.slice(-4) + '). Anyone using this browser while logged in can publish.' }));
+      p.appendChild(el('div', { 'class': 'a-actions' }, [btn('Remove key from this browser', function () { S.clearToken(); setNote(''); renderPanel(); say('Key removed.'); }, 'a-btn a-btn-quiet')]));
+    } else {
+      p.appendChild(el('p', { 'class': 'a-fine', text: 'Publishing needs a key from GitHub, the service that hosts the site. It is created once, and it is what really protects the live site: without it nobody can publish, whatever password they know. Treat it like a password.' }));
+      var steps = el('details', { 'class': 'pub-help' }, [el('summary', { text: 'How to create the key (one time, about two minutes)' }), el('ol', {}, [
+        el('li', { text: 'Sign in to GitHub with the account that owns the site, then open github.com/settings/personal-access-tokens/new.' }),
+        el('li', { text: 'Name it "Elevate admin publishing" and choose an expiry (90 days to one year; you will make a new one then).' }),
+        el('li', { text: 'Under Repository access choose "Only select repositories" and pick ' + S.CFG.repo.split('/')[1] + '.' }),
+        el('li', { text: 'Under Permissions, Repository permissions, set Contents to "Read and write". Leave everything else off.' }),
+        el('li', { text: 'Press Generate token, copy it, and paste it below.' })])]);
+      p.appendChild(steps);
+      var k = input('password', '', { autocomplete: 'off', spellcheck: 'false', 'aria-describedby': 'k-msg' }), rem = el('input', { type: 'checkbox', id: 'k-rem' });
+      var kmsg = el('p', { 'class': 'a-msg', role: 'alert', id: 'k-msg' });
+      p.appendChild(el('div', { 'class': 'add-form' }, [field('Publishing key', k, 'k-in'),
+        el('label', { 'class': 'a-check', 'for': 'k-rem' }, [rem, el('span', { text: 'Remember on this computer (only on a computer you trust)' })]), kmsg,
+        btn('Save key', function () {
+          var v = k.value.trim(); kmsg.textContent = ''; kmsg.className = 'a-msg';
+          if (v.length < 20) { kmsg.textContent = 'Paste the whole key from GitHub.'; return; }
+          kmsg.textContent = 'Checking…';
+          S.checkToken(v).then(function () { S.saveToken(v, rem.checked); renderPanel(); say('Key saved.'); }).catch(function (e) { kmsg.textContent = e.message || 'Could not check the key. Are you online?'; });
+        }, 'btn btn-primary')]));
+    }
+
+    p.appendChild(el('h3', { text: 'Publish' }));
+    var msg = el('p', { 'class': 'a-msg' + (note.bad || !note.text ? '' : ' ok'), id: 'pub-msg', role: 'status', 'aria-live': 'polite', text: note.text });
+    var go = btn('Publish to live site', function () {
+      if (!confirm('Publish ' + ch.map(function (k) { return NAMES[k]; }).join(', ') + ' to the live site? Every visitor will see it.')) return;
+      go.disabled = true; setNote('Publishing…');
+      S.publish(S.token(), me.email, function () { return confirm('The live site was changed by someone else after you opened Admin. Publishing now replaces their changes. Continue?'); })
+        .then(function (payload) { setNote('Published. GitHub is rebuilding the site, which takes about a minute. Checking…'); renderPanel(); pollLive(payload.updated); })
+        .catch(function (e) {
+          if (e && e.cancelled) setNote('Cancelled. Nothing was changed.'); else if (e && e.status === 401) { S.clearToken(); setNote(e.message + ' It was removed; add a new one.', true); }
+          else setNote((e && e.message) || 'Could not publish. Check your connection and try again.', true);
+          renderPanel();
+        });
+    }, 'btn btn-primary');
+    go.disabled = !ch.length || !tok;
+    var acts = [go];
+    if (ch.length) acts.push(btn('Discard unpublished changes', function () { if (confirm('Throw away your saved draft and go back to what is live?')) { S.discardDraft(); setNote(''); renderPanel(); say('Draft discarded.'); } }, 'a-btn a-btn-quiet'));
+    p.appendChild(el('div', { 'class': 'a-actions' }, acts)); p.appendChild(msg);
+    if (!tok) p.appendChild(el('p', { 'class': 'a-fine', text: 'Add the publishing key above to turn on the Publish button.' }));
+    p.appendChild(el('p', { 'class': 'a-fine', text: 'Every publish is saved as a version on GitHub, so an earlier version can always be brought back. Admin accounts and passwords stay in this browser and are never published.' }));
   }
 
   /* ---------- ADMINS ---------- */
@@ -223,7 +298,7 @@
     p.appendChild(el('h3', { text: 'Change your password' }));
     var f = el('form', { novalidate: 'novalidate', 'class': 'add-form' }); pwForm(f, false, function () { f.reset(); }); p.appendChild(f);
     p.appendChild(el('h3', { text: 'Backup' }));
-    p.appendChild(el('p', { 'class': 'a-fine', text: 'Download your edits to keep a copy or move them to another browser. Passwords are included only as scrambled hashes.' }));
+    p.appendChild(el('p', { 'class': 'a-fine', text: 'Download your draft and admin list to keep a copy or move them to another browser. Passwords are included only as scrambled hashes. The live site is backed up on GitHub automatically.' }));
     var imp = el('input', { type: 'file', accept: 'application/json', 'aria-label': 'Import a backup file' });
     imp.addEventListener('change', function () {
       var f = imp.files[0]; if (!f) return; var r = new FileReader();
@@ -243,7 +318,7 @@
     if (forced) { var f = $('#force-form'); f.textContent = ''; pwForm(f, true, function () { showApp(); }); $('#fc').focus(); }
     else { renderTabs(); renderPanel(); }
   }
-  function logout() { try { sessionStorage.removeItem(SESS); } catch (e) {} me = null; location.reload(); }
+  function logout() { try { sessionStorage.removeItem(SESS); localStorage.removeItem('elevate.prev'); } catch (e) {} me = null; location.reload(); }
   $('#logout').addEventListener('click', logout);
   var timer = setInterval(function () { if (me && !getSess()) { clearInterval(timer); logout(); } }, 15000);
 
@@ -255,12 +330,12 @@
     var a = S.admins().filter(function (x) { return x.email === email; })[0];
     /* always do the hash work so a wrong email and a wrong password take the same time */
     S.verify(pw, a ? a.pw : S.defaultAdmins()[0].pw).then(function (ok) {
-      if (a && ok) { setLock({ n: 0, until: 0 }); me = a; setSess(a.email); $('#l-pw').value = ''; showApp(); return; }
+      if (a && ok) { setLock({ n: 0, until: 0 }); me = a; setSess(a.email); $('#l-pw').value = ''; S.ready.then(function () { S.seedDraft(); showApp(); }); return; }
       lk.n = (lk.n || 0) + 1; if (lk.n >= 5) { lk.until = Date.now() + 5 * 60000; lk.n = 0; } setLock(lk);
       msg.textContent = 'Email or password is not right.';
     });
   });
 
   var s = getSess();
-  if (s) { var a0 = S.admins().filter(function (x) { return x.email === s.email; })[0]; if (a0) { me = a0; showApp(); } }
+  if (s) { S.ready.then(function () { S.seedDraft(); var a0 = S.admins().filter(function (x) { return x.email === s.email; })[0]; if (a0) { me = a0; showApp(); } }); }
 })();

@@ -18,12 +18,23 @@ One-page marketing site for Elevate HR Solutions (Chelsea Shumaker, PHR, Tampa, 
 - Replace `https://tehchaoz.github.io/elevate-hr-solutions/` with `https://elevatehr.org/` in `index.html` (canonical, og tags, structured data).
 - Remove the `noindex, nofollow` meta tag and the "design preview" footer line.
 
-## Admin (demo)
+## Admin and publishing
 
-`admin.html` (footer "Admin" link) lets the owner edit section colors, services, FAQ, team members, other admins and their own password.
+`admin.html` (footer "Admin" link) lets the owner edit section colors, services, FAQ and team, manage other admins, and change their own password.
 
-- **Browser-only.** Edits are saved in localStorage, so they show only in the browser where they were made, the same as the Lutz Country Store demo. Live publishing and real protection need a server.
-- The starting login is `chelsea@elevatehr.org`. The starting password is stored only as a salted PBKDF2 hash in `js/store.js` and must be changed at first log in. Anyone can read that hash in the public repo, so treat the starting password as a placeholder.
-- New admins get a temporary password and must choose their own. Five wrong tries lock the screen for five minutes (this lock is also browser-side).
-- `js/store.js` holds the content store and applies saved edits to the public pages. `js/admin.js` and `css/admin.css` are the admin screen.
-- Backup: Admin > Account > Download backup.
+**How edits reach the live site (no third-party backend):**
+
+1. Admin edits are saved as a *draft* in the admin's browser (localStorage). A banner shows what is not live yet.
+2. **Admin > Publish** commits `content.json` to this repo through the GitHub API. GitHub Pages rebuilds (about a minute) and every visitor gets the new content.
+3. Public pages load `content.json` on every visit (`js/store.js`), cache the last copy to avoid flicker, and render it with text-only DOM calls. Colors, URLs and photo sources are validated before use. An empty `content.json` means "use the text built into the HTML".
+4. Only `theme`, `services`, `faq` and `team` are published. Admin accounts and password hashes are never written to `content.json`.
+
+**One-time setup per publisher:** a GitHub fine-grained token limited to this repository with *Contents: Read and write* (steps are shown in Admin > Publish). The token is kept only in that browser (session by default, or "remember on this computer"). It is the real protection: without it nobody can publish, whatever the admin password is.
+
+**Launch checklist:** if the repo moves or the default branch changes, edit `CFG` at the top of `js/store.js` (`repo`, `branch`, `file`). Each publish is a git commit, so any earlier version can be restored from GitHub history (`git revert <commit>`).
+
+**Known limits:**
+- Admin accounts, the password and the lockout live in each browser. The starting password hash is readable in the public repo, so treat the starting password as a placeholder. This is a convenience gate, not security; the token is the security.
+- Two people publishing at once: the later publish warns if the live site changed since it opened Admin.
+- Team photos are stored inside `content.json` (resized to 360 px). A large team makes the file bigger.
+- Backup of the draft and admin list: Admin > Account > Download backup.
