@@ -1,11 +1,10 @@
 /* Elevate HR Solutions: content store + public-page rendering.
-   Published content lives in content.json (committed to the GitHub repo by the Admin Publish button, then served by
-   GitHub Pages). Admin edits are a draft in this browser until published. See README. */
+   Optional shared content is read from content.json when present. Admin edits are a draft in this browser only. See README. */
 (function () {
   'use strict';
   var KEY = 'elevate.content.v1';      /* admin working copy (draft), this browser only */
   var LIVEKEY = 'elevate.live.v1';     /* last published copy this browser saw (stops flicker) */
-  /* Where Publish writes. At launch, if the repo moves, change repo/branch here and nothing else. */
+  /* Where shared content is read from. */
   var CFG = { repo: 'tehchaoz/elevate-hr-solutions', branch: 'main', file: 'content.json' };
   var SYNC = ['theme', 'services', 'faq', 'team', 'testimonials', 'settings'];   /* the only keys that are ever published */
   var live = {}, mode = 'live';
