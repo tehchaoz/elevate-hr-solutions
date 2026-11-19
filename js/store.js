@@ -22,8 +22,8 @@
     { key: 'testimonial', label: 'Client testimonial', note: 'Quote section', page: 'Home', bg: '#16224f', text: '#f7f4ea' },
     { key: 'faq', label: 'Questions', note: 'FAQ list', page: 'Home', bg: '#f7f4ea', text: '#16224f' },
     { key: 'contact', label: "Let's connect", note: 'Contact and form', page: 'Home', bg: '#16224f', text: '#f7f4ea' },
-    { key: 'about-intro', label: 'About: introduction', note: 'Top of the About page', page: 'About', bg: '#f7f4ea', text: '#16224f' },
-    { key: 'team', label: 'About: team', note: 'Meet the team', page: 'About', bg: '#16224f', text: '#f7f4ea' },
+    { key: 'about-intro', label: 'About Us: introduction', note: 'Top of the About Us page', page: 'About Us', bg: '#f7f4ea', text: '#16224f' },
+    { key: 'team', label: 'About Us: team', note: 'Meet the team', page: 'About Us', bg: '#16224f', text: '#f7f4ea' },
     { key: 'footer', label: 'Footer', note: 'Bottom of every page', page: 'All pages', bg: '#0f1838', text: '#f7f4ea' }
   ];
   var PALETTE = [
