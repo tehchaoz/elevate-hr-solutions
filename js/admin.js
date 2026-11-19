@@ -3,7 +3,7 @@
   'use strict';
   var S = window.ElevateStore, el = S.el;
   S.useDraft();
-  var NAMES = { theme: 'Colors', services: 'Services', faq: 'FAQ', team: 'Team' };
+  var NAMES = { theme: 'Colors', services: 'Services', faq: 'FAQ', team: 'Team', testimonials: 'Testimonials', settings: 'Calendly link' };
   var note = { text: '', bad: false };
   function $(s, r) { return (r || document).querySelector(s); }
   var SESS = 'elevate.sess', LOCK = 'elevate.lock', TTL = 30 * 60 * 1000;
@@ -57,7 +57,7 @@
   }
 
   /* ---------- tabs ---------- */
-  var TABS = [['colors', 'Colors'], ['services', 'Services'], ['faq', 'FAQ'], ['team', 'Team'], ['publish', 'Publish'], ['admins', 'Admins'], ['account', 'Account']];
+  var TABS = [['colors', 'Colors'], ['services', 'Services'], ['faq', 'FAQ'], ['team', 'Team'], ['testimonials', 'Testimonials'], ['calendly', 'Calendly'], ['publish', 'Publish'], ['admins', 'Admins'], ['account', 'Account']];
   function renderTabs() {
     var nav = $('#tabs'); nav.textContent = '';
     TABS.forEach(function (t) {
@@ -68,7 +68,7 @@
   }
   function renderPanel() {
     var p = $('#panel'); p.textContent = ''; touch();
-    ({ colors: colorsPanel, services: servicesPanel, faq: faqPanel, team: teamPanel, publish: publishPanel, admins: adminsPanel, account: accountPanel })[tab](p);
+    ({ colors: colorsPanel, services: servicesPanel, faq: faqPanel, team: teamPanel, testimonials: testimonialsPanel, calendly: calendlyPanel, publish: publishPanel, admins: adminsPanel, account: accountPanel })[tab](p);
     pubBar();
   }
   function head(p, title, text) { p.appendChild(el('h2', { text: title })); if (text) p.appendChild(el('p', { 'class': 'a-lede', text: text })); }
@@ -186,6 +186,64 @@
       btn('Add a team member', function () { list.push({ id: 'm' + Date.now(), name: '', role: '', bio: '', photo: '' }); draw(); }, 'a-btn'),
       btn('Save team', function () { var ok = list.filter(function (m, i) { return i === 0 || m.name.trim(); }); try { if (!S.set('team', ok)) throw 0; say('Team saved as a draft. Press Publish to put it on the live site.'); } catch (e) { say('Could not save: the photos may be too large for this browser. Remove a photo and try again.', true); } }, 'btn btn-primary'),
       btn('Restore original', function () { if (confirm('Restore the original team (owner only)?')) { S.reset('team'); renderPanel(); } }, 'a-btn a-btn-quiet')]));
+  }
+
+  /* ---------- TESTIMONIALS ---------- */
+  function testimonialsPanel(p) {
+    head(p, 'Testimonials', 'Client quotes shown in the testimonial section of the home page. Each one can link to the original (for example the LinkedIn recommendation) so visitors can check it is real.');
+    var list = S.get('testimonials'); var box = el('div', { 'class': 'rows' }); p.appendChild(box);
+    var msg = el('p', { 'class': 'a-msg', role: 'alert' });
+    function draw() {
+      box.textContent = '';
+      list.forEach(function (t, i) {
+        var hl = input('text', t.headline, { maxlength: '200' }), q = el('textarea', { rows: '9', maxlength: '4000' }); q.value = t.quote || '';
+        var nm = input('text', t.name, { maxlength: '80' }), ti = input('text', t.title, { maxlength: '120' });
+        var lk = input('url', t.link, { maxlength: '480', placeholder: 'https://www.linkedin.com/posts/...', inputmode: 'url', autocomplete: 'off' }), lt = input('text', t.linkText, { maxlength: '120', placeholder: 'View the original on LinkedIn' });
+        hl.addEventListener('input', function () { t.headline = hl.value; }); q.addEventListener('input', function () { t.quote = q.value; });
+        nm.addEventListener('input', function () { t.name = nm.value; }); ti.addEventListener('input', function () { t.title = ti.value; });
+        lk.addEventListener('input', function () { t.link = lk.value; }); lt.addEventListener('input', function () { t.linkText = lt.value; });
+        box.appendChild(el('div', { 'class': 'row-card' }, [
+          field('Large quote (one short sentence)', hl, 'tq-h' + i, i === 0 ? 'The first testimonial\'s large quote is the headline shown beside the section.' : 'Only the first testimonial\'s large quote is shown as the headline.'),
+          field('Full testimonial', q, 'tq-q' + i, 'Leave a blank line between paragraphs.'),
+          field('Name', nm, 'tq-n' + i), field('Title and company', ti, 'tq-t' + i),
+          field('Link to the original (optional)', lk, 'tq-l' + i, 'Must start with https://. When filled in, the whole card opens this page.'),
+          field('Link wording', lt, 'tq-lt' + i, 'For example: View the original on LinkedIn, August 7, 2026'),
+          el('div', { 'class': 'row-actions' }, [btn('Move up', function () { move(list, i, -1); draw(); }, 'a-btn a-btn-quiet'), btn('Move down', function () { move(list, i, 1); draw(); }, 'a-btn a-btn-quiet'), btn('Remove', function () { if (confirm('Remove the testimonial from ' + (t.name || 'this person') + '?')) { list.splice(i, 1); draw(); } }, 'a-btn a-btn-danger')])]));
+      });
+    }
+    draw();
+    p.appendChild(msg);
+    p.appendChild(el('div', { 'class': 'a-actions' }, [
+      btn('Add a testimonial', function () { list.push({ id: 't' + Date.now(), headline: '', quote: '', name: '', title: '', link: '', linkText: '' }); draw(); }, 'a-btn'),
+      btn('Save testimonials', function () {
+        msg.textContent = '';
+        for (var i = 0; i < list.length; i++) {
+          var t = list[i];
+          if (!t.name.trim() || !t.quote.trim()) { msg.textContent = 'Testimonial ' + (i + 1) + ' needs a name and the full testimonial text.'; return; }
+          if (t.link.trim() && !S.url(t.link)) { msg.textContent = 'The link for ' + t.name + ' must be a full web address starting with https://'; return; }
+        }
+        if (!list.length) { msg.textContent = 'Keep at least one testimonial, or use "Restore original".'; return; }
+        S.set('testimonials', list.map(function (t) { return { id: t.id, headline: t.headline.trim(), quote: t.quote.trim(), name: t.name.trim(), title: t.title.trim(), link: S.url(t.link), linkText: t.linkText.trim() }; }));
+        say('Testimonials saved as a draft. Press Publish to put them on the live site.');
+      }, 'btn btn-primary'),
+      btn('Restore original', function () { if (confirm('Restore the original testimonial?')) { S.reset('testimonials'); renderPanel(); } }, 'a-btn a-btn-quiet')]));
+  }
+
+  /* ---------- CALENDLY ---------- */
+  function calendlyPanel(p) {
+    head(p, 'Calendly', 'The "Book intro call" buttons on every page open this link. Until a link is added, those buttons scroll to the contact form instead, so nothing is broken while the Calendly account is inactive.');
+    var cur = (S.get('settings') || {}).calendly || '';
+    var u = input('url', cur, { maxlength: '480', placeholder: 'https://calendly.com/your-name/intro-call', inputmode: 'url', autocomplete: 'off', 'aria-describedby': 'cal-msg' });
+    var msg = el('p', { 'class': 'a-msg', role: 'alert', id: 'cal-msg' });
+    p.appendChild(el('div', { 'class': 'add-form' }, [field('Calendly scheduling link', u, 'cal-u', 'Copy it from your Calendly account (Share, then Copy link). Leave empty to switch booking off.'), msg,
+      el('div', { 'class': 'a-actions' }, [
+        btn('Save link', function () {
+          var v = u.value.trim(); msg.textContent = '';
+          if (v && !S.url(v)) { msg.textContent = 'Enter the full link, starting with https://'; return; }
+          if (v) S.set('settings', { calendly: S.url(v) }); else S.reset('settings');
+          say(v ? 'Calendly link saved as a draft. Press Publish to put it on the live site.' : 'Calendly link cleared. Press Publish to apply it.');
+        }, 'btn btn-primary'),
+        btn('Test the link', function () { var v = S.url(u.value); if (!v) { msg.textContent = 'Enter a full https:// link first.'; return; } window.open(v, '_blank', 'noopener'); }, 'a-btn')])]));
   }
 
   /* ---------- PUBLISH ---------- */

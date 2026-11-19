@@ -3,8 +3,8 @@
   'use strict';
 
   /* ---- CONFIG: fill these in when the client supplies them ---- */
-  // Real Calendly scheduling link (e.g. https://calendly.com/<name>/intro). While empty,
-  // every "Book" button scrolls to the contact section instead.
+  // Fallback only. The Calendly link is normally set in Admin > Calendly and published; js/store.js applies it.
+  // While there is no link, every "Book" button scrolls to the contact section instead.
   var CALENDLY_URL = '';
   // Form handler endpoint (e.g. a Formspree URL). While empty, the form opens the visitor's
   // email app with the message pre-filled, addressed to the client.

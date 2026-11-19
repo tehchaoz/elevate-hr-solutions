@@ -7,9 +7,11 @@
   var LIVEKEY = 'elevate.live.v1';     /* last published copy this browser saw (stops flicker) */
   /* Where Publish writes. At launch, if the repo moves, change repo/branch here and nothing else. */
   var CFG = { repo: 'tehchaoz/elevate-hr-solutions', branch: 'main', file: 'content.json' };
-  var SYNC = ['theme', 'services', 'faq', 'team'];   /* the only keys that are ever published */
+  var SYNC = ['theme', 'services', 'faq', 'team', 'testimonials', 'settings'];   /* the only keys that are ever published */
   var live = {}, mode = 'live';
   var DEFAULTS = {"services": [{"id": "s1", "title": "HR Infrastructure & Compliance", "items": ["Comprehensive HR audit", "Employee handbook and policy updates", "Employment law compliance and risk management", "Process development and optimization", "End-to-end M&A support"]}, {"id": "s2", "title": "Talent Acquisition & Onboarding", "items": ["Customized hiring strategies and recruiting support", "New hire orientation", "Onboarding program development"]}, {"id": "s3", "title": "Performance & Culture", "items": ["Employee engagement and retention strategies", "Team-building initiatives", "Behavioral assessments", "Performance management systems", "Coaching and leadership development", "Workforce planning and organizational design", "Customized training programs"]}, {"id": "s4", "title": "Payroll, Benefits & Operations Support", "items": ["Payroll and benefits administration", "Total compensation strategies", "Bookkeeping and administrative support"]}], "faq": [{"q": "Is the first call really free?", "a": "Yes. The introductory call is complimentary and carries absolutely no obligation."}, {"q": "What if I only need help with one thing?", "a": "That works. We can step in as a one-time project partner, such as an HR audit or a handbook update, or stay on as ongoing HR support."}, {"q": "Can you handle payroll, benefits and bookkeeping too?", "a": "Yes. Alongside HR, we offer payroll and benefits administration, total compensation strategies, and light bookkeeping and administrative support."}, {"q": "What kinds of businesses do you work with?", "a": "Our experience spans engineering, healthcare, hospitality, technology and construction, including multi-state organizations navigating growth, transformation, and increasing organizational complexity."}, {"q": "Where are you based?", "a": "Tampa, Florida. You can reach us at 317-796-7914 or chelsea@elevatehr.org."}], "team": [{"id": "owner", "name": "Chelsea Shumaker, PHR", "role": "Founder / Principal HR Consultant", "bio": "I’ve spent 22 years rolling up my sleeves in HR roles across a wide range of industries, helping organizations establish the right structure, navigate complex people challenges, and create a workplace where teams can thrive. I’m committed to helping companies build and sustain high-performing cultures while ensuring the people, processes, and HR infrastructure behind them operate effectively.", "photo": "assets/chelsea-headshot.jpg"}], "pw": "pbkdf2$200000$68a0db86aa21e964a7ab6b499bb68358$441680090adaa519bfa55533931782c8e2cf97fec6fdd7969ee9290424265032"};
+  DEFAULTS.testimonials = [{"id": "t1", "headline": "What stood out most was their incredible flexibility.", "quote": "I am pleased to highly recommend Chelsea and her team at Elevate HR Solutions for their exceptional human resources consulting services.\n\nOur organization partnered with Elevate HR Solutions during a critical period of personnel changes within our HR department. What stood out most was their incredible flexibility. They seamlessly stepped into a full-scale HR management role and then scaled down to limited support as we successfully transitioned operations back in-house with a new HR Manager hire.\n\nChelsea and her consultants were extremely responsive, highly available, and consistently reliable. They integrated into our workflow perfectly.", "name": "Marlin Knowles", "title": "Director of Operations, USI", "link": "https://www.linkedin.com/posts/elevate-hrsolutions_elevatehrsolutions-hrconsulting-fractionalhr-activity-7496007592385748992-28cl", "linkText": "View the original on LinkedIn, August 7, 2026"}];
+  DEFAULTS.settings = {"calendly": ""};
 
   /* Sections whose background and text colours can be changed in Admin. */
   var SECTIONS = [
@@ -34,6 +36,7 @@
   function write(o) { try { localStorage.setItem(KEY, JSON.stringify(o)); return true; } catch (e) { return false; } }
   function clone(x) { return JSON.parse(JSON.stringify(x)); }
   function ok(x) { return typeof x === 'string' && /^#[0-9a-f]{6}$/i.test(x); }
+  function url(x) { return typeof x === 'string' && /^https:\/\/[^\s<>"']{3,480}$/i.test(x.trim()) ? x.trim() : ''; }
   function str(x, n) { return typeof x === 'string' ? x.slice(0, n) : ''; }
   function stable(v) {
     if (Array.isArray(v)) return '[' + v.map(stable).join(',') + ']';
@@ -57,6 +60,10 @@
     if (Array.isArray(o.team)) out.team = o.team.filter(function (x) { return x && typeof x.name === 'string'; }).slice(0, 40).map(function (x) {
       return { id: str(String(x.id || ''), 40), name: str(x.name, 80), role: str(x.role, 90), bio: str(x.bio, 1500), photo: str(x.photo, 400000) };
     });
+    if (Array.isArray(o.testimonials)) out.testimonials = o.testimonials.filter(function (x) { return x && typeof x.name === 'string' && typeof x.quote === 'string'; }).slice(0, 30).map(function (x) {
+      return { id: str(String(x.id || ''), 40), headline: str(x.headline, 200), quote: str(x.quote, 4000), name: str(x.name, 80), title: str(x.title, 120), link: url(x.link), linkText: str(x.linkText, 120) };
+    });
+    if (o.settings && typeof o.settings === 'object' && !Array.isArray(o.settings)) out.settings = { calendly: url(o.settings.calendly) };
     return out;
   }
   function cur() { return mode === 'draft' ? read() : live; }
@@ -71,7 +78,7 @@
     reset: function (k) { var o = read(); delete o[k]; return write(o); },
     exportAll: function () { return JSON.stringify(read(), null, 2); },
     importAll: function (txt) { var o = JSON.parse(txt); if (!o || typeof o !== 'object') throw new Error('bad'); var c = clean(o); if (Array.isArray(o.admins)) c.admins = o.admins; c.__seeded = 1; return write(c); },
-    ok: ok, useDraft: function () { mode = 'draft'; }
+    ok: ok, url: url, useDraft: function () { mode = 'draft'; }
   };
 
   /* ---- published content: fetch, cache, compare ---- */
@@ -215,13 +222,39 @@
       box.appendChild(el('article', { 'class': 'member' + (i === 0 ? ' member-lead' : '') }, [el('div', { 'class': 'member-photo' }, [img]), body]));
     });
   }
-  function renderAll() { applyTheme(); renderServices(); renderFaq(); renderTeam(); }
+  var ARROW = '<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>';
+  function renderTestimonials() {
+    var box = document.querySelector('.testi-list'); if (!box || !Store.has('testimonials')) return;
+    var list = Store.get('testimonials'); box.textContent = '';
+    var h = document.getElementById('testi-h'); if (h && list[0] && list[0].headline) h.textContent = '\u201c' + list[0].headline + '\u201d';
+    list.forEach(function (t) {
+      var paras = t.quote.split(/\n\s*\n/).map(function (x) { return x.trim(); }).filter(Boolean).map(function (x) { return el('p', { text: x }); });
+      var cap = el('figcaption', {}, [el('strong', { text: t.name }), t.title ? el('span', { text: t.title }) : null]);
+      if (t.link) {
+        var a = el('a', { 'class': 'testi-link', href: t.link, target: '_blank', rel: 'noopener' });
+        a.appendChild(document.createTextNode((t.linkText || 'Read the original') + ' '));
+        var w = document.createElement('span'); w.innerHTML = ARROW; a.appendChild(w.firstChild);
+        a.appendChild(el('span', { 'class': 'visually-hidden', text: ' (opens in a new tab)' })); cap.appendChild(a);
+      }
+      box.appendChild(el('figure', { 'class': 'testi' }, [el('blockquote', {}, paras), cap]));
+    });
+  }
+  /* Booking buttons: use the Calendly link from Admin when there is one, otherwise they scroll to the contact form. */
+  function applyBooking() {
+    var s = Store.has('settings') ? Store.get('settings') : null, u = s && s.calendly ? url(s.calendly) : '';
+    Array.prototype.forEach.call(document.querySelectorAll('[data-book]'), function (a) {
+      if (a.getAttribute('data-href0') === null) a.setAttribute('data-href0', a.getAttribute('href') || '');
+      if (u) { a.setAttribute('href', u); a.setAttribute('target', '_blank'); a.setAttribute('rel', 'noopener'); }
+      else { a.setAttribute('href', a.getAttribute('data-href0')); a.removeAttribute('target'); a.removeAttribute('rel'); }
+    });
+  }
+  function renderAll() { applyTheme(); renderServices(); renderFaq(); renderTeam(); renderTestimonials(); applyBooking(); }
   function previewBar() {
     if (document.getElementById('preview-bar') || !Store.changes().length) return;
     var a = el('a', { href: 'admin.html', text: 'Back to Admin' });
     document.body.appendChild(el('div', { id: 'preview-bar', 'class': 'preview-bar', role: 'note' }, [el('span', { text: 'Previewing your unpublished edits. Visitors still see the published site.' }), a]));
   }
-  if (document.querySelector('[data-sec]') || document.querySelector('.svc-list') || document.querySelector('.faq') || document.querySelector('.team')) {
+  if (document.querySelector('[data-sec]') || document.querySelector('.svc-list') || document.querySelector('.faq') || document.querySelector('.team') || document.querySelector('[data-book]')) {
     if (sessionActive() && read().__seeded) mode = 'draft';
     renderAll();
     Store.ready.then(function (r) {
