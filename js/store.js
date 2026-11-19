@@ -123,10 +123,10 @@
   Store.clearToken = function () { try { sessionStorage.removeItem(TKEY); localStorage.removeItem(TKEY); } catch (e) {} };
   function gh(token) { return { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' }; }
   function ghErr(r) {
-    var m = r.status === 401 ? 'GitHub did not accept the publishing key. It may be wrong, expired or revoked.'
-      : (r.status === 403 || r.status === 404) ? 'The publishing key is not allowed to change this site. It needs "Contents: Read and write" on the repository ' + CFG.repo + '.'
-      : r.status === 429 ? 'GitHub asked us to slow down. Try again in a minute.'
-      : 'GitHub returned an error (' + r.status + '). Nothing was changed.';
+    var m = r.status === 401 ? 'The publishing key was not accepted. It may be wrong, expired or revoked.'
+      : (r.status === 403 || r.status === 404) ? 'The publishing key is not allowed to change this site. Ask your web developer for a new one.'
+      : r.status === 429 ? 'Too many requests. Try again in a minute.'
+      : 'Publishing hit an error (' + r.status + '). Nothing was changed.';
     var e = new Error(m); e.status = r.status; return e;
   }
   Store.checkToken = function (token) {

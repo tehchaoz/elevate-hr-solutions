@@ -292,7 +292,7 @@
   function pollLive(stamp, n) {
     S.fetchLive(true).then(function (raw) {
       if (raw && raw.updated === stamp) { setNote('Live now. Visitors can see your changes (they may need to refresh the page).'); return; }
-      if ((n || 0) >= 30) { setNote('Published. GitHub is still rebuilding the site; check the live page again in a few minutes.'); return; }
+      if ((n || 0) >= 30) { setNote('Published. The live site is still updating; check the live page again in a few minutes.'); return; }
       setTimeout(function () { pollLive(stamp, (n || 0) + 1); }, 6000);
     });
   }
@@ -308,21 +308,14 @@
       p.appendChild(el('p', { 'class': 'a-fine', text: 'A publishing key is saved in this browser (ends in ' + tok.slice(-4) + '). Anyone using this browser while logged in can publish.' }));
       p.appendChild(el('div', { 'class': 'a-actions' }, [btn('Remove key from this browser', function () { S.clearToken(); setNote(''); renderPanel(); say('Key removed.'); }, 'a-btn a-btn-quiet')]));
     } else {
-      p.appendChild(el('p', { 'class': 'a-fine', text: 'Publishing needs a key from GitHub, the service that hosts the site. It is created once, and it is what really protects the live site: without it nobody can publish, whatever password they know. Treat it like a password.' }));
-      var steps = el('details', { 'class': 'pub-help' }, [el('summary', { text: 'How to create the key (one time, about two minutes)' }), el('ol', {}, [
-        el('li', { text: 'Sign in to GitHub with the account that owns the site, then open github.com/settings/personal-access-tokens/new.' }),
-        el('li', { text: 'Name it "Elevate admin publishing" and choose an expiry (90 days to one year; you will make a new one then).' }),
-        el('li', { text: 'Under Repository access choose "Only select repositories" and pick ' + S.CFG.repo.split('/')[1] + '.' }),
-        el('li', { text: 'Under Permissions, Repository permissions, set Contents to "Read and write". Leave everything else off.' }),
-        el('li', { text: 'Press Generate token, copy it, and paste it below.' })])]);
-      p.appendChild(steps);
+      p.appendChild(el('p', { 'class': 'a-fine', text: 'Publishing needs a publishing key. Your web developer creates it once and gives it to you. It is what really protects the live site: without it nobody can publish, whatever password they know. Treat it like a password.' }));
       var k = input('password', '', { autocomplete: 'off', spellcheck: 'false', 'aria-describedby': 'k-msg' }), rem = el('input', { type: 'checkbox', id: 'k-rem' });
       var kmsg = el('p', { 'class': 'a-msg', role: 'alert', id: 'k-msg' });
       p.appendChild(el('div', { 'class': 'add-form' }, [field('Publishing key', k, 'k-in'),
         el('label', { 'class': 'a-check', 'for': 'k-rem' }, [rem, el('span', { text: 'Remember on this computer (only on a computer you trust)' })]), kmsg,
         btn('Save key', function () {
           var v = k.value.trim(); kmsg.textContent = ''; kmsg.className = 'a-msg';
-          if (v.length < 20) { kmsg.textContent = 'Paste the whole key from GitHub.'; return; }
+          if (v.length < 20) { kmsg.textContent = 'Paste the whole publishing key.'; return; }
           kmsg.textContent = 'Checking…';
           S.checkToken(v).then(function () { S.saveToken(v, rem.checked); renderPanel(); say('Key saved.'); }).catch(function (e) { kmsg.textContent = e.message || 'Could not check the key. Are you online?'; });
         }, 'btn btn-primary')]));
@@ -334,7 +327,7 @@
       if (!confirm('Publish ' + ch.map(function (k) { return NAMES[k]; }).join(', ') + ' to the live site? Every visitor will see it.')) return;
       go.disabled = true; setNote('Publishing…');
       S.publish(S.token(), me.email, function () { return confirm('The live site was changed by someone else after you opened Admin. Publishing now replaces their changes. Continue?'); })
-        .then(function (payload) { setNote('Published. GitHub is rebuilding the site, which takes about a minute. Checking…'); renderPanel(); pollLive(payload.updated); })
+        .then(function (payload) { setNote('Published. The live site is updating, which takes about a minute. Checking…'); renderPanel(); pollLive(payload.updated); })
         .catch(function (e) {
           if (e && e.cancelled) setNote('Cancelled. Nothing was changed.'); else if (e && e.status === 401) { S.clearToken(); setNote(e.message + ' It was removed; add a new one.', true); }
           else setNote((e && e.message) || 'Could not publish. Check your connection and try again.', true);
@@ -346,7 +339,7 @@
     if (ch.length) acts.push(btn('Discard unpublished changes', function () { if (confirm('Throw away your saved draft and go back to what is live?')) { S.discardDraft(); setNote(''); renderPanel(); say('Draft discarded.'); } }, 'a-btn a-btn-quiet'));
     p.appendChild(el('div', { 'class': 'a-actions' }, acts)); p.appendChild(msg);
     if (!tok) p.appendChild(el('p', { 'class': 'a-fine', text: 'Add the publishing key above to turn on the Publish button.' }));
-    p.appendChild(el('p', { 'class': 'a-fine', text: 'Every publish is saved as a version on GitHub, so an earlier version can always be brought back. Admin accounts and passwords stay in this browser and are never published.' }));
+    p.appendChild(el('p', { 'class': 'a-fine', text: 'Every publish is saved as a version, so an earlier version can always be brought back. Admin accounts and passwords stay in this browser and are never published.' }));
   }
 
   /* ---------- ADMINS ---------- */
@@ -398,7 +391,7 @@
     p.appendChild(el('h3', { text: 'Change your password' }));
     var f = el('form', { novalidate: 'novalidate', 'class': 'add-form' }); pwForm(f, false, function () { f.reset(); }); p.appendChild(f);
     p.appendChild(el('h3', { text: 'Backup' }));
-    p.appendChild(el('p', { 'class': 'a-fine', text: 'Download your draft and admin list to keep a copy or move them to another browser. Passwords are included only as scrambled hashes. The live site is backed up on GitHub automatically.' }));
+    p.appendChild(el('p', { 'class': 'a-fine', text: 'Download your draft and admin list to keep a copy or move them to another browser. Passwords are included only as scrambled hashes. The live site keeps its own saved versions.' }));
     var imp = el('input', { type: 'file', accept: 'application/json', 'aria-label': 'Import a backup file' });
     imp.addEventListener('change', function () {
       var f = imp.files[0]; if (!f) return; var r = new FileReader();
