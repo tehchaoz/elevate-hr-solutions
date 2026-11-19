@@ -280,7 +280,7 @@ h3 { letter-spacing: -0.015em; line-height: 1.25; }
 .mode-project p { color: var(--ink); }
 .mode-project .link-arrow { color: var(--teal-ink); }
 .mode-ongoing { background: var(--navy); color: var(--cream); }
-.mode-ongoing::after { background: var(--teal-light); opacity: 1; bottom: -130px; }
+.mode-ongoing::after { background: var(--teal-light); opacity: 1; bottom: -165px; }
 .mode-ongoing p { color: rgba(247, 244, 234, 0.86); }
 .mode-ongoing .link-arrow { color: var(--teal-light); }
 .mode-interim { background: #fff; }
