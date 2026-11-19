@@ -32,7 +32,6 @@
   var nav = $('#nav'), toggle = $('#navToggle'), sheet = $('#navSheet');
   function onScroll() {
     nav.classList.toggle('is-stuck', window.scrollY > 24);
-    updateBar();
   }
   function closeSheet() {
     if (sheet.hidden) return;
@@ -53,14 +52,6 @@
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !sheet.hidden) { closeSheet(); toggle.focus(); } });
   document.addEventListener('click', function (e) { if (!sheet.hidden && !nav.contains(e.target)) closeSheet(); });
 
-  /* Mobile action bar: appears after the hero CTAs leave, hides at the contact section */
-  var bar = $('#mobileBar'), heroCta = $('.hero .cta-row'), contact = $('#contact');
-  function updateBar() {
-    if (!bar) return;
-    var heroBottom = heroCta.getBoundingClientRect().bottom;
-    var contactTop = contact.getBoundingClientRect().top;
-    bar.classList.toggle('show', heroBottom < 0 && contactTop > window.innerHeight * 0.6);
-  }
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
 
@@ -116,6 +107,7 @@
 
   /* Contact form: inline validation, then endpoint or mailto fallback */
   var form = $('#contact-form'), status = $('#formStatus');
+  if (form) {
   // Native constraint validation (required, type, pattern) with :user-invalid styling in CSS.
   // JS only keeps ARIA in sync: aria-invalid, the error linked via aria-describedby while it
   // shows, and one polite live region for errors that appear when a field is left.
@@ -182,4 +174,5 @@
       status.appendChild(document.createTextNode(' or email ' + CLIENT_EMAIL + ' directly.'));
     }
   });
+  }
 })();
