@@ -15,13 +15,10 @@ One-page marketing site for Elevate HR Solutions (Chelsea Shumaker, PHR, Tampa, 
 5. High-resolution logo and headshot. Real testimonials, if she wants them (none are invented).
 
 ## At launch (preview to production)
-- Replace `https://tehchaoz.github.io/elevate-hr-solutions/` with `https://elevatehr.org/` in `index.html` and `about.html` (canonical, og tags, structured data). The phone, email, location and social links in the structured data (`index.html`) are static: update them there if the Admin Business info values change.
+- Replace `https://tehchaoz.github.io/elevate-hr-solutions/` with `https://elevatehr.org/` in `index.html` and `about.html` (canonical, og tags, structured data). The phone, email and location in the structured data are static text in `index.html`.
 - Remove the `noindex, nofollow` meta tag (the visible "design preview" footer line is already gone).
 
-## Admin (preview only)
+## Admin removed; the site moves to Wix
 
-`admin.html` (footer "Admin" link) lets the owner try editing section colors, services, FAQ, team, business info (location, hours, phone, email, social links), testimonials (with links), the Calendly link, a form-service link, other admins (each with their own list of tabs they may edit, and a password reset) and their password.
+The browser-only Admin page was removed. It could only save edits in the browser where they were made, so visitors never saw them. On Wix the owner edits text directly in the Wix editor and presses Publish. See `docs/wix-handoff.md` for the copy, colors, section order, files, the Admin-to-Wix map, the domain steps (GoDaddy) and the launch checklist. Earlier Admin versions are in git history if ever needed.
 
-Edits are saved in the browser where they were made, so they are **not** shown to visitors. Publishing to the live site was built and then removed (git history: commit `ec794c0` and the Publish tab in `9b1b284`) because the site is expected to move to Wix, where the owner edits directly in Wix. Until then, set the Calendly link and form endpoint in `js/main.js` (`CALENDLY_URL`, `FORM_ENDPOINT`).
-
-The starting login is `chelsea@elevatehr.org`; its password is stored only as a salted hash and must be changed at first log in. The admin password and lockout are browser-side and are not real security.

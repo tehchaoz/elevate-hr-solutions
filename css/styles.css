@@ -436,9 +436,6 @@ p, dd { text-wrap: pretty; }
 }
 .nav-toggle { margin-right: -11px; } /* align the bars with the content edge */
 
-/* Shown on public pages only to a logged-in admin who has unpublished edits */
-.preview-bar { position: fixed; left: 50%; bottom: 1rem; transform: translateX(-50%); z-index: 90; display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: center; justify-content: center; width: max-content; max-width: calc(100vw - 2rem); background: var(--navy); color: var(--cream); padding: 0.7rem 1.1rem; border-radius: 14px; font-size: var(--t-small); font-weight: 600; box-shadow: 0 8px 28px rgb(var(--navy-rgb) / 0.3); }
-.preview-bar a { color: var(--teal-light); text-decoration: underline; text-underline-offset: 3px; }
 .testi-list { display: grid; gap: 1.5rem; align-content: start; }
 
 /* taste audit: testimonial pull-quote is a statement, not a headline */

@@ -3,13 +3,13 @@
   'use strict';
 
   /* ---- CONFIG: fill these in when the client supplies them ---- */
-  // Fallback only. The Calendly link is normally set in Admin > Calendly; js/store.js applies it.
+  // Paste the Calendly link here until the site moves to Wix (on Wix, point the Book intro call buttons at the Calendly link instead).
   // While there is no link, every "Book" button scrolls to the contact section instead.
   var CALENDLY_URL = '';
-  // Fallback only: the form service link is normally set in Admin > Intro call entries. While empty, the form opens the visitor's
+  // Form service link (for example a Formspree address). While empty, the form opens the visitor's
   // email app with the message pre-filled, addressed to the client.
   var FORM_ENDPOINT = '';
-  var BIZ = (window.ElevateStore && window.ElevateStore.business) ? window.ElevateStore.business() : { email: 'chelsea@elevatehr.org', phone: '317-796-7914' };
+  var BIZ = { email: 'chelsea@elevatehr.org', phone: '317-796-7914' };
   var CLIENT_EMAIL = BIZ.email;
 
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -151,7 +151,7 @@
     status.textContent = '';
     var data = {};
     fields.forEach(function (f) { data[f.name] = f.value.trim(); });
-    var endpoint = FORM_ENDPOINT || (window.ElevateStore ? window.ElevateStore.setting('formEndpoint') : '');
+    var endpoint = FORM_ENDPOINT;
     if (endpoint) {
       data._subject = 'Intro call request' + (data.company ? ' - ' + data.company : ''); data.source = 'Website intro call form';
       status.textContent = 'Sending...';
