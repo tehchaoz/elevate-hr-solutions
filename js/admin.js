@@ -45,9 +45,9 @@
   }
 
   /* ---------- tabs ---------- */
-  var TABS = [['colors', 'Colors'], ['services', 'Services'], ['faq', 'FAQ'], ['team', 'Team'], ['testimonials', 'Testimonials'], ['calendly', 'Calendly'], ['entries', 'Intro call entries'], ['account', 'Account & admins']];
+  var TABS = [['colors', 'Colors'], ['services', 'Services'], ['faq', 'FAQ'], ['team', 'Team'], ['business', 'Business info'], ['testimonials', 'Testimonials'], ['calendly', 'Calendly'], ['entries', 'Intro call entries'], ['account', 'Account & admins']];
   /* What each admin may edit. An admin saved without a list (the built-in ones) has full access. */
-  var PERMS = [['colors', 'Colors'], ['services', 'Services'], ['faq', 'FAQ'], ['team', 'Team'], ['testimonials', 'Testimonials'], ['calendly', 'Calendly link'], ['entries', 'Intro call entries'], ['admins', 'Manage admins']];
+  var PERMS = [['colors', 'Colors'], ['services', 'Services'], ['faq', 'FAQ'], ['team', 'Team'], ['business', 'Business info'], ['testimonials', 'Testimonials'], ['calendly', 'Calendly link'], ['entries', 'Intro call entries'], ['admins', 'Manage admins']];
   function allows(person, key) { return !person.perms || person.perms.indexOf(key) !== -1; }
   function can(key) { return key === 'account' || (me && allows(me, key)); }
   function isFull(person) { return !person.perms || PERMS.every(function (x) { return person.perms.indexOf(x[0]) !== -1; }); }
@@ -72,7 +72,7 @@
   }
   function renderPanel() {
     var p = $('#panel'); p.textContent = ''; touch(); if (!can(tab)) tab = firstAllowed();
-    ({ colors: colorsPanel, services: servicesPanel, faq: faqPanel, team: teamPanel, testimonials: testimonialsPanel, calendly: calendlyPanel, entries: entriesPanel, account: accountPanel })[tab](p);
+    ({ colors: colorsPanel, services: servicesPanel, faq: faqPanel, team: teamPanel, business: businessPanel, testimonials: testimonialsPanel, calendly: calendlyPanel, entries: entriesPanel, account: accountPanel })[tab](p);
   }
   function head(p, title, text) { p.appendChild(el('h2', { text: title })); if (text) p.appendChild(el('p', { 'class': 'a-lede', text: text })); }
 
@@ -130,7 +130,7 @@
 
   /* ---------- FAQ ---------- */
   function faqPanel(p) {
-    head(p, 'FAQ', 'Questions and answers shown near the bottom of the home page.');
+    head(p, 'FAQ', 'Questions and answers shown near the bottom of the home page. Type {phone}, {email} or {location} in an answer and it fills in the current details from Business info.');
     var list = S.get('faq'); var box = el('div', { 'class': 'rows' }); p.appendChild(box);
     function draw() {
       box.textContent = '';
@@ -230,6 +230,48 @@
         say('Testimonials saved.');
       }, 'btn btn-primary'),
       btn('Restore original', function () { if (confirm('Restore the original testimonial?')) { S.reset('testimonials'); renderPanel(); } }, 'a-btn a-btn-quiet')]));
+  }
+
+
+  /* ---------- BUSINESS INFO ---------- */
+  function businessPanel(p) {
+    head(p, 'Business info', 'Phone, email, location, hours and social links. They appear in the contact section, the footer, the top of the home page and the FAQ. Empty phone, email or location boxes show the original details.');
+    var b = S.business(), d = { phone: '317-796-7914', email: 'chelsea@elevatehr.org', location: 'Tampa, Florida' };
+    var saved = (S.has('business') ? S.get('business') : {}) || {};
+    var f = {
+      location: input('text', saved.location || '', { maxlength: '120', placeholder: d.location, autocomplete: 'off' }),
+      phone: input('tel', saved.phone || '', { maxlength: '24', placeholder: d.phone, inputmode: 'tel', autocomplete: 'off' }),
+      email: input('email', saved.email || '', { maxlength: '260', placeholder: d.email, inputmode: 'email', autocomplete: 'off' }),
+      hours: input('text', saved.hours || '', { maxlength: '200', placeholder: 'Monday to Friday, 9 am to 5 pm Eastern', autocomplete: 'off' }),
+      linkedin: input('url', S.has('business') ? (saved.linkedin || '') : b.linkedin, { maxlength: '480', placeholder: b.linkedin, inputmode: 'url', autocomplete: 'off' }),
+      facebook: input('url', saved.facebook || '', { maxlength: '480', placeholder: 'https://www.facebook.com/your-page', inputmode: 'url', autocomplete: 'off' }),
+      instagram: input('url', saved.instagram || '', { maxlength: '480', placeholder: 'https://www.instagram.com/your-account', inputmode: 'url', autocomplete: 'off' })
+    };
+    var msg = el('p', { 'class': 'a-msg', role: 'alert' });
+    function group(title, kids) { return el('fieldset', { 'class': 'perm-set' }, [el('legend', { text: title })].concat(kids)); }
+    p.appendChild(el('div', { 'class': 'add-form' }, [
+      group('Where and when', [
+        field('Location', f.location, 'bi-loc', 'Shown as written, for example "Tampa, Florida".'),
+        field('Hours (optional)', f.hours, 'bi-hrs', 'Shown in the contact section when filled in. Leave empty to hide it.')]),
+      group('How to reach you', [
+        field('Phone', f.phone, 'bi-ph', 'Shown as typed. Visitors on a phone can tap it to call.'),
+        field('Email', f.email, 'bi-em', 'Shown on the page. Note: the contact form also uses this address if the visitor\'s email app is used.')]),
+      group('Social links (optional)', [
+        field('LinkedIn', f.linkedin, 'bi-li', 'Full address starting with https://. Empty hides the LinkedIn link.'),
+        field('Facebook', f.facebook, 'bi-fb'), field('Instagram', f.instagram, 'bi-ig')]), msg,
+      el('div', { 'class': 'a-actions' }, [
+        btn('Save', function () {
+          msg.textContent = '';
+          var v = {}; Object.keys(f).forEach(function (k) { v[k] = f[k].value.trim(); });
+          if (v.phone && !/^[0-9 ()+.\-]{7,24}$/.test(v.phone)) { msg.textContent = 'Use digits, spaces, dashes or brackets for the phone number, for example 317-796-7914.'; return; }
+          if (v.email && !/^[^\s@<>"']{1,64}@[^\s@<>"']{1,200}\.[^\s@<>"']{2,}$/.test(v.email)) { msg.textContent = 'Enter an email like name@company.com.'; return; }
+          var bad = ['linkedin', 'facebook', 'instagram'].filter(function (k) { return v[k] && !S.url(v[k]); })[0];
+          if (bad) { msg.textContent = 'The ' + bad.charAt(0).toUpperCase() + bad.slice(1) + ' link must be a full address starting with https://'; return; }
+          var out = {}; Object.keys(v).forEach(function (k) { out[k] = k === 'linkedin' || k === 'facebook' || k === 'instagram' ? S.url(v[k]) : v[k]; });
+          S.set('business', out);
+          say('Business info saved.');
+        }, 'btn btn-primary'),
+        btn('Restore original', function () { if (confirm('Restore the original contact details?')) { S.reset('business'); renderPanel(); } }, 'a-btn a-btn-quiet')])]));
   }
 
   /* ---------- CALENDLY ---------- */

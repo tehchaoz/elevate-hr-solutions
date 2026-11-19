@@ -15,7 +15,7 @@
 .a-fine { font-size: var(--t-small); color: var(--muted); line-height: 1.5; }
 .a-field { display: grid; gap: 0.35rem; }
 .a-field label { font-weight: 650; font-size: var(--t-small); }
-.a-field input[type="text"], .a-field input[type="email"], .a-field input[type="password"], .a-field textarea { width: 100%; font: inherit; font-size: var(--t-body); color: var(--navy); background: #fff; border: 1.5px solid rgb(var(--navy-rgb) / 0.28); border-radius: 12px; padding: 0.7rem 0.9rem; min-height: 46px; }
+.a-field input[type="text"], .a-field input[type="tel"], .a-field input[type="url"], .a-field input[type="email"], .a-field input[type="password"], .a-field textarea { width: 100%; font: inherit; font-size: var(--t-body); color: var(--navy); background: #fff; border: 1.5px solid rgb(var(--navy-rgb) / 0.28); border-radius: 12px; padding: 0.7rem 0.9rem; min-height: 46px; }
 .a-field textarea { resize: vertical; }
 .a-field input:focus, .a-field textarea:focus { outline: 3px solid var(--teal-strong); outline-offset: 2px; }
 .a-msg { color: var(--danger); font-weight: 600; font-size: var(--t-small); min-height: 1.2em; }

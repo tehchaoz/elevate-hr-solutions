@@ -3,13 +3,14 @@
   'use strict';
 
   /* ---- CONFIG: fill these in when the client supplies them ---- */
-  // Fallback only. The Calendly link is normally set in Admin > Calendly and published; js/store.js applies it.
+  // Fallback only. The Calendly link is normally set in Admin > Calendly; js/store.js applies it.
   // While there is no link, every "Book" button scrolls to the contact section instead.
   var CALENDLY_URL = '';
   // Fallback only: the form service link is normally set in Admin > Intro call entries. While empty, the form opens the visitor's
   // email app with the message pre-filled, addressed to the client.
   var FORM_ENDPOINT = '';
-  var CLIENT_EMAIL = 'chelsea@elevatehr.org';
+  var BIZ = (window.ElevateStore && window.ElevateStore.business) ? window.ElevateStore.business() : { email: 'chelsea@elevatehr.org', phone: '317-796-7914' };
+  var CLIENT_EMAIL = BIZ.email;
 
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var $ = function (s, r) { return (r || document).querySelector(s); };
@@ -156,7 +157,7 @@
       status.textContent = 'Sending...';
       fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(data) })
         .then(function (r) { if (!r.ok) throw new Error(); status.textContent = 'Thank you. We will be in touch soon.'; form.reset(); })
-        .catch(function () { status.textContent = 'That did not send. Please email ' + CLIENT_EMAIL + ' or call 317-796-7914.'; });
+        .catch(function () { status.textContent = 'That did not send. Please email ' + CLIENT_EMAIL + ' or call ' + BIZ.phone + '.'; });
     } else {
       var subject = 'Intro call inquiry' + (data.company ? ' - ' + data.company : '');
       var body = data.message + '\n\n' + data.name + (data.company ? '\n' + data.company : '') + '\n' + data.email;
@@ -167,7 +168,7 @@
       var copy = document.createElement('button');
       copy.type = 'button'; copy.className = 'link-btn'; copy.textContent = 'copy your message';
       copy.addEventListener('click', function () {
-        var done = function () { status.textContent = 'Copied. Paste it into an email to ' + CLIENT_EMAIL + ', or call 317-796-7914.'; };
+        var done = function () { status.textContent = 'Copied. Paste it into an email to ' + CLIENT_EMAIL + ', or call ' + BIZ.phone + '.'; };
         if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(full).then(done, done);
         else done();
       });
