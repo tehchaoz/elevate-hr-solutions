@@ -17,3 +17,13 @@ One-page marketing site for Elevate HR Solutions (Chelsea Shumaker, PHR, Tampa, 
 ## At launch (preview to production)
 - Replace `https://tehchaoz.github.io/elevate-hr-solutions/` with `https://elevatehr.org/` in `index.html` (canonical, og tags, structured data).
 - Remove the `noindex, nofollow` meta tag and the "design preview" footer line.
+
+## Admin (demo)
+
+`admin.html` (footer "Admin" link) lets the owner edit section colors, services, FAQ, team members, other admins and their own password.
+
+- **Browser-only.** Edits are saved in localStorage, so they show only in the browser where they were made, the same as the Lutz Country Store demo. Live publishing and real protection need a server.
+- The starting login is `chelsea@elevatehr.org`. The starting password is stored only as a salted PBKDF2 hash in `js/store.js` and must be changed at first log in. Anyone can read that hash in the public repo, so treat the starting password as a placeholder.
+- New admins get a temporary password and must choose their own. Five wrong tries lock the screen for five minutes (this lock is also browser-side).
+- `js/store.js` holds the content store and applies saved edits to the public pages. `js/admin.js` and `css/admin.css` are the admin screen.
+- Backup: Admin > Account > Download backup.
