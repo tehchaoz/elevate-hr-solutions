@@ -20,14 +20,14 @@ One-page marketing site for Elevate HR Solutions (Chelsea Shumaker, PHR, Tampa, 
 
 ## Admin and publishing
 
-`admin.html` (footer "Admin" link) lets the owner edit section colors, services, FAQ, team and testimonials (each with its own link), set the Calendly link, manage other admins, and change their own password.
+`admin.html` (footer "Admin" link) lets the owner edit section colors, services, FAQ, team and testimonials (each with its own link), set the Calendly link, connect a form service that keeps intro-call requests, manage other admins, and change their own password.
 
 **How edits reach the live site (no third-party backend):**
 
 1. Admin edits are saved as a *draft* in the admin's browser (localStorage). A banner shows what is not live yet.
 2. **Admin > Publish** commits `content.json` to this repo through the GitHub API. GitHub Pages rebuilds (about a minute) and every visitor gets the new content.
 3. Public pages load `content.json` on every visit (`js/store.js`), cache the last copy to avoid flicker, and render it with text-only DOM calls. Colors, URLs and photo sources are validated before use. An empty `content.json` means "use the text built into the HTML".
-4. Only `theme`, `services`, `faq`, `team`, `testimonials` and `settings` (the Calendly link) are published. Admin accounts and password hashes are never written to `content.json`.
+4. Only `theme`, `services`, `faq`, `team`, `testimonials` and `settings` (Calendly link, form-service link, entries page link) are published. Admin accounts and password hashes are never written to `content.json`.
 
 **One-time setup per publisher:** a GitHub fine-grained token limited to this repository with *Contents: Read and write* (steps are shown in Admin > Publish). The token is kept only in that browser (session by default, or "remember on this computer"). It is the real protection: without it nobody can publish, whatever the admin password is.
 

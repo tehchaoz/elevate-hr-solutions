@@ -63,7 +63,7 @@
     if (Array.isArray(o.testimonials)) out.testimonials = o.testimonials.filter(function (x) { return x && typeof x.name === 'string' && typeof x.quote === 'string'; }).slice(0, 30).map(function (x) {
       return { id: str(String(x.id || ''), 40), headline: str(x.headline, 200), quote: str(x.quote, 4000), name: str(x.name, 80), title: str(x.title, 120), link: url(x.link), linkText: str(x.linkText, 120) };
     });
-    if (o.settings && typeof o.settings === 'object' && !Array.isArray(o.settings)) out.settings = { calendly: url(o.settings.calendly) };
+    if (o.settings && typeof o.settings === 'object' && !Array.isArray(o.settings)) out.settings = { calendly: url(o.settings.calendly), formEndpoint: url(o.settings.formEndpoint), entriesUrl: url(o.settings.entriesUrl) };
     return out;
   }
   function cur() { return mode === 'draft' ? read() : live; }
@@ -78,6 +78,8 @@
     reset: function (k) { var o = read(); delete o[k]; return write(o); },
     exportAll: function () { return JSON.stringify(read(), null, 2); },
     importAll: function (txt) { var o = JSON.parse(txt); if (!o || typeof o !== 'object') throw new Error('bad'); var c = clean(o); if (Array.isArray(o.admins)) c.admins = o.admins; c.__seeded = 1; return write(c); },
+    /* One value from the published (or, in preview, draft) settings; '' when unset. */
+    setting: function (k) { var s = cur().settings; return s && typeof s[k] === 'string' ? s[k] : ''; },
     ok: ok, url: url, useDraft: function () { mode = 'draft'; }
   };
 

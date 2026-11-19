@@ -3,7 +3,7 @@
   'use strict';
   var S = window.ElevateStore, el = S.el;
   S.useDraft();
-  var NAMES = { theme: 'Colors', services: 'Services', faq: 'FAQ', team: 'Team', testimonials: 'Testimonials', settings: 'Calendly link' };
+  var NAMES = { theme: 'Colors', services: 'Services', faq: 'FAQ', team: 'Team', testimonials: 'Testimonials', settings: 'Calendly / entries settings' };
   var note = { text: '', bad: false };
   function $(s, r) { return (r || document).querySelector(s); }
   var SESS = 'elevate.sess', LOCK = 'elevate.lock', TTL = 30 * 60 * 1000;
@@ -57,7 +57,7 @@
   }
 
   /* ---------- tabs ---------- */
-  var TABS = [['colors', 'Colors'], ['services', 'Services'], ['faq', 'FAQ'], ['team', 'Team'], ['testimonials', 'Testimonials'], ['calendly', 'Calendly'], ['publish', 'Publish'], ['admins', 'Admins'], ['account', 'Account']];
+  var TABS = [['colors', 'Colors'], ['services', 'Services'], ['faq', 'FAQ'], ['team', 'Team'], ['testimonials', 'Testimonials'], ['calendly', 'Calendly'], ['entries', 'Intro call entries'], ['publish', 'Publish'], ['admins', 'Admins'], ['account', 'Account']];
   function renderTabs() {
     var nav = $('#tabs'); nav.textContent = '';
     TABS.forEach(function (t) {
@@ -68,7 +68,7 @@
   }
   function renderPanel() {
     var p = $('#panel'); p.textContent = ''; touch();
-    ({ colors: colorsPanel, services: servicesPanel, faq: faqPanel, team: teamPanel, testimonials: testimonialsPanel, calendly: calendlyPanel, publish: publishPanel, admins: adminsPanel, account: accountPanel })[tab](p);
+    ({ colors: colorsPanel, services: servicesPanel, faq: faqPanel, team: teamPanel, testimonials: testimonialsPanel, calendly: calendlyPanel, entries: entriesPanel, publish: publishPanel, admins: adminsPanel, account: accountPanel })[tab](p);
     pubBar();
   }
   function head(p, title, text) { p.appendChild(el('h2', { text: title })); if (text) p.appendChild(el('p', { 'class': 'a-lede', text: text })); }
@@ -230,6 +230,11 @@
   }
 
   /* ---------- CALENDLY ---------- */
+  function getSettings() { return Object.assign({}, S.get('settings') || {}); }
+  function putSettings(o) {
+    var out = {}; Object.keys(o).forEach(function (k) { if (o[k]) out[k] = o[k]; });
+    if (Object.keys(out).length) S.set('settings', out); else S.reset('settings');
+  }
   function calendlyPanel(p) {
     head(p, 'Calendly', 'The "Book intro call" buttons on every page open this link. Until a link is added, those buttons scroll to the contact form instead, so nothing is broken while the Calendly account is inactive.');
     var cur = (S.get('settings') || {}).calendly || '';
@@ -240,10 +245,47 @@
         btn('Save link', function () {
           var v = u.value.trim(); msg.textContent = '';
           if (v && !S.url(v)) { msg.textContent = 'Enter the full link, starting with https://'; return; }
-          if (v) S.set('settings', { calendly: S.url(v) }); else S.reset('settings');
+          var st = getSettings(); st.calendly = v ? S.url(v) : ''; putSettings(st);
           say(v ? 'Calendly link saved as a draft. Press Publish to put it on the live site.' : 'Calendly link cleared. Press Publish to apply it.');
         }, 'btn btn-primary'),
         btn('Test the link', function () { var v = S.url(u.value); if (!v) { msg.textContent = 'Enter a full https:// link first.'; return; } window.open(v, '_blank', 'noopener'); }, 'a-btn')])]));
+  }
+
+  /* ---------- INTRO CALL ENTRIES (backup until Calendly is set up) ---------- */
+  function entriesPanel(p) {
+    head(p, 'Intro call entries', 'Requests from the contact form on the home page. A free form service receives each one, emails it to Chelsea and keeps a list you can open any time. Use it as the backup until Calendly is set up.');
+    var st = getSettings(), on = !!S.url(st.formEndpoint || '');
+    p.appendChild(el('div', { 'class': 'pub-status' }, [
+      el('strong', { text: on ? 'Form service is connected' : 'Not connected yet' }),
+      el('p', { 'class': 'a-fine', text: on ? 'Requests are sent to the service, which emails them and keeps them.' : 'Until a link is added, the form opens the visitor\'s email app addressed to chelsea@elevatehr.org. Nothing is stored.' })]));
+    p.appendChild(el('details', { 'class': 'pub-help' }, [el('summary', { text: 'How to set it up (one time, about five minutes)' }), el('ol', {}, [
+      el('li', { text: 'Create a free account at formspree.io using the email where requests should arrive (chelsea@elevatehr.org).' }),
+      el('li', { text: 'Choose New form, name it "Intro call requests", and confirm the email address.' }),
+      el('li', { text: 'Copy the form link. It looks like https://formspree.io/f/abcdwxyz. Paste it below.' }),
+      el('li', { text: 'Copy the page address of the form\'s Submissions list as well, and paste it into the second box so the Open entries button works.' }),
+      el('li', { text: 'Press Save, then Publish, then Send a test entry to check it arrives.' })])]));
+    var ep = input('url', st.formEndpoint || '', { maxlength: '480', placeholder: 'https://formspree.io/f/...', inputmode: 'url', autocomplete: 'off' });
+    var en = input('url', st.entriesUrl || '', { maxlength: '480', placeholder: 'https://formspree.io/forms/.../submissions', inputmode: 'url', autocomplete: 'off' });
+    var msg = el('p', { 'class': 'a-msg', role: 'alert' });
+    p.appendChild(el('div', { 'class': 'add-form' }, [
+      field('Form link (where requests are sent)', ep, 'en-ep', 'Leave empty to go back to the email-app fallback.'),
+      field('Entries page (optional)', en, 'en-en', 'Where you read the list. Needs your account login.'), msg,
+      el('div', { 'class': 'a-actions' }, [
+        btn('Save', function () {
+          msg.textContent = '';
+          if (ep.value.trim() && !S.url(ep.value)) { msg.textContent = 'The form link must start with https://'; return; }
+          if (en.value.trim() && !S.url(en.value)) { msg.textContent = 'The entries page must start with https://'; return; }
+          var n = getSettings(); n.formEndpoint = S.url(ep.value); n.entriesUrl = S.url(en.value); putSettings(n);
+          say('Saved as a draft. Press Publish to turn it on for the live site.'); renderPanel();
+        }, 'btn btn-primary'),
+        btn('Send a test entry', function () {
+          var u = S.url(ep.value); if (!u) { msg.textContent = 'Enter a full https:// form link first.'; return; }
+          msg.className = 'a-msg ok'; msg.textContent = 'Sending…';
+          fetch(u, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify({ name: 'Test entry from Admin', email: me.email, company: 'Elevate admin', message: 'This is a test sent from the Admin screen. You can ignore it.', _subject: 'Test: intro call request', source: 'Admin test' }) })
+            .then(function (r) { if (!r.ok) throw new Error(); msg.className = 'a-msg ok'; msg.textContent = 'Test sent. Check the inbox and the entries page. If this is a new form, the service may ask you to confirm it first.'; })
+            .catch(function () { msg.className = 'a-msg'; msg.textContent = 'The test did not go through. Check the form link.'; });
+        }, 'a-btn')].concat(S.url(en.value || st.entriesUrl || '') ? [btn('Open entries', function () { var v = S.url(en.value); if (v) window.open(v, '_blank', 'noopener'); }, 'a-btn')] : []))]));
+    p.appendChild(el('p', { 'class': 'a-fine', text: 'Entries are kept by the form service, not by this website. Free plans have a monthly limit, so check the service\'s plan page. Calendly bookings are listed in Calendly itself.' }));
   }
 
   /* ---------- PUBLISH ---------- */

@@ -6,7 +6,7 @@
   // Fallback only. The Calendly link is normally set in Admin > Calendly and published; js/store.js applies it.
   // While there is no link, every "Book" button scrolls to the contact section instead.
   var CALENDLY_URL = '';
-  // Form handler endpoint (e.g. a Formspree URL). While empty, the form opens the visitor's
+  // Fallback only: the form service link is normally set in Admin > Intro call entries. While empty, the form opens the visitor's
   // email app with the message pre-filled, addressed to the client.
   var FORM_ENDPOINT = '';
   var CLIENT_EMAIL = 'chelsea@elevatehr.org';
@@ -150,9 +150,11 @@
     status.textContent = '';
     var data = {};
     fields.forEach(function (f) { data[f.name] = f.value.trim(); });
-    if (FORM_ENDPOINT) {
+    var endpoint = FORM_ENDPOINT || (window.ElevateStore ? window.ElevateStore.setting('formEndpoint') : '');
+    if (endpoint) {
+      data._subject = 'Intro call request' + (data.company ? ' - ' + data.company : ''); data.source = 'Website intro call form';
       status.textContent = 'Sending...';
-      fetch(FORM_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(data) })
+      fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(data) })
         .then(function (r) { if (!r.ok) throw new Error(); status.textContent = 'Thank you. We will be in touch soon.'; form.reset(); })
         .catch(function () { status.textContent = 'That did not send. Please email ' + CLIENT_EMAIL + ' or call 317-796-7914.'; });
     } else {
