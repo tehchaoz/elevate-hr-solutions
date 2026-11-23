@@ -444,7 +444,7 @@ p, dd { text-wrap: pretty; }
 
 /* about section on the home page */
 .about-intro { display: grid; gap: 1rem; margin-top: 1.5rem; max-width: 62ch; }
-@media (min-width: 900px) { .about-col { margin-left: auto; max-width: 62ch; font-size: var(--t-lead); } } /* title and paragraphs sit together against the right edge, level with the team card */
+@media (min-width: 900px) { .about-col { margin-left: auto; max-width: 62ch; } } /* title and paragraphs sit together against the right edge, level with the team card */
 .about-intro p { color: rgba(247, 244, 234, 0.9); font-size: var(--t-lead); line-height: 1.55; }
 .about-team-h { margin-top: clamp(2.5rem, 5vw, 3.5rem); font-size: var(--t-h3); letter-spacing: -0.025em; color: var(--cream); }
 .about-team-h + .team { margin-top: 1.25rem; }
