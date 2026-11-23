@@ -458,3 +458,7 @@ p, dd { text-wrap: pretty; }
 /* design polish: keyboard focus matches hover, current section shown in the menu */
 .nav-links a:focus-visible, .nav-sheet a:focus-visible { background: rgb(var(--navy-rgb) / 0.07); outline: 2px solid var(--teal-strong); outline-offset: 2px; }
 .nav-links a[aria-current="true"], .nav-sheet a[aria-current="true"] { background: var(--mint); }
+
+/* narrow desktop widths (and phones shown at 900px): keep the menu on one line */
+.nav-links a { white-space: nowrap; }
+@media (min-width: 900px) and (max-width: 1100px) { .nav-links a { padding-inline: 0.6rem; } .nav-inner { gap: 1rem; } }
