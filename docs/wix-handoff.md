@@ -40,16 +40,16 @@ Nothing from the Admin needs to be carried over or re-built. No custom code is r
 
 ## 3. Pages, navigation and section order
 
-**Navigation:** logo (left), Services, Working together, About Us, Recommendations, FAQ, then one button "Book intro call". Phone-size: a menu that opens a panel.
+**Navigation:** logo (left), About Us, Services, Working together, FAQ, then one button "Book intro call". Phone-size: a menu that opens a panel.
 
 **Home page, in order:**
 
 1. Hero: headline, one supporting sentence, name and title, headshot in a circle over a navy and green shape.
-2. Services (navy background): heading, sentence, four open-and-close items.
-3. Working together (light green background): heading and three cards.
-4. Why partner with us (cream): four short reasons in two columns.
-5. About Us (navy): heading, two paragraphs, then "Meet the team" with Chelsea's card. This used to be a separate page; it is now a section of the home page, and the menu's About Us goes to it.
-6. Recommendations (light green): heading, short quote, full recommendation card linking to the LinkedIn post. The client can add more recommendations here.
+2. About Us (light green): heading, two paragraphs, then "Meet the team" with Chelsea's card. This used to be a separate page; it is now the second section of the home page, and the menu's About Us goes to it.
+3. Services (navy background): heading, sentence, four open-and-close items.
+4. Working together (light green background): heading and three cards.
+5. Why partner with us (cream): four short reasons in two columns.
+6. Client testimonial (navy): heading, short quote, full testimonial card linking to the LinkedIn post.
 7. FAQ (cream): five open-and-close questions.
 8. Let's connect (navy): contact details and the form.
 9. Footer (deep navy): logo, tagline, contact line, copyright.
@@ -85,7 +85,7 @@ Four areas of support. Open any one to see what is included.
 - **Cross-industry perspective:** Experience across engineering, healthcare, technology, hospitality, and construction environments enables us to apply proven practices and deliver adaptable solutions to each engagement.
 - **Tailored approach:** We translate complex workforce challenges into practical, actionable strategies aligned with your business priorities, organizational culture, and long-term objectives.
 
-### Recommendations: "Recommendations."
+### Client testimonial: "What a client says."
 - **Pull quote:** "What stood out most was their incredible flexibility."
 - **Supporting line:** Flexible support. Experienced guidance. The right expertise at the right time.
 - **Full testimonial (card):**
@@ -145,7 +145,7 @@ Your Partner in People, Performance, and Compliance. · Chelsea Shumaker, PHR ·
 - [ ] Exact brand colors if they differ from the logo.
 - [ ] LinkedIn company page URL confirmed.
 - [ ] Confirm the five FAQ answers and the services lists are final.
-- [ ] More recommendations (with permission), if she has them: each is a name, title, the text, and an optional link.
+- [ ] More testimonials (with permission), if she has them.
 - [ ] Business hours, if she wants them shown.
 - [ ] Final sign-off on the Wix preview before the domain is switched.
 

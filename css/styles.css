@@ -443,9 +443,6 @@ p, dd { text-wrap: pretty; }
 
 /* about section on the home page */
 .about-intro { display: grid; gap: 1rem; margin-top: 1.5rem; max-width: 62ch; }
-.about-intro p { color: rgba(247, 244, 234, 0.9); font-size: var(--t-lead); line-height: 1.55; }
-.about-team-h { margin-top: clamp(2.5rem, 5vw, 3.5rem); font-size: var(--t-h3); letter-spacing: -0.025em; color: var(--cream); }
+.about-intro p { color: var(--ink); font-size: var(--t-lead); line-height: 1.55; }
+.about-team-h { margin-top: clamp(2.5rem, 5vw, 3.5rem); font-size: var(--t-h3); letter-spacing: -0.025em; color: var(--navy); }
 .about-team-h + .team { margin-top: 1.25rem; }
-/* recommendations sit on the light green section */
-.testimonial .pull { color: var(--navy); }
-.testimonial .split-head .muted { color: var(--ink); }
