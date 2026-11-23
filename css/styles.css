@@ -105,7 +105,7 @@ a { color: inherit; text-underline-offset: 0.2em; text-decoration-thickness: 1.5
 .h-section.center { max-width: 24ch; }
 .tl { color: var(--teal); } /* the logo green, as the client asked; large display text only */
 h3 { letter-spacing: -0.015em; line-height: 1.25; }
-.lede { font-size: var(--t-lead); line-height: 1.55; color: var(--ink); max-width: 38ch; font-style: italic; text-align: right; text-wrap: balance; }
+.lede { font-size: var(--t-lead); line-height: 1.55; color: var(--ink); max-width: 38ch; font-style: italic; text-wrap: balance; }
 
 /* Buttons */
 .btn {
@@ -183,7 +183,8 @@ h3 { letter-spacing: -0.015em; line-height: 1.25; }
 /* Hero */
 .hero { padding: 7.25rem 0 3.5rem; overflow: clip; }
 .hero-grid { display: grid; gap: 2.5rem; align-items: center; }
-.hero-copy { display: grid; gap: 1.5rem; justify-items: end; }
+.hero-copy { display: grid; gap: 1.5rem; justify-items: start; }
+@media (min-width: 900px) { .hero-copy { padding-left: var(--c-left, 0px); } } /* set from the C of Compliance by main.js */
 .hero-grid > .h-display { text-wrap: pretty; }
 .line { display: block; overflow: hidden; padding: 0.04em 0.1em 0.14em 0; margin: -0.04em -0.1em -0.14em 0; }
 .w { display: inline-block; }
