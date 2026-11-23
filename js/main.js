@@ -97,6 +97,22 @@
   window.addEventListener('resize', alignLede);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(alignLede);
 
+  /* Phone action bar steps away while the contact section is on screen */
+  var dock = $('#dock');
+  var awayEls = [$('#contact'), $('footer')].filter(Boolean);
+  if (dock && awayEls.length && 'IntersectionObserver' in window) {
+    var seen = [];
+    var dockIO = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        var i = seen.indexOf(e.target);
+        if (e.isIntersecting && i < 0) seen.push(e.target);
+        if (!e.isIntersecting && i >= 0) seen.splice(i, 1);
+      });
+      dock.classList.toggle('is-away', seen.length > 0);
+    }, { rootMargin: '0px 0px -10% 0px', threshold: 0.15 });
+    awayEls.forEach(function (el) { dockIO.observe(el); });
+  }
+
   /* Menu jumps: show the target section at once instead of waiting on its fade */
   $$('a[href^="#"]').forEach(function (a) {
     a.addEventListener('click', function () {
