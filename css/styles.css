@@ -184,7 +184,6 @@ h3 { letter-spacing: -0.015em; line-height: 1.25; }
 .hero { padding: 7.25rem 0 3.5rem; overflow: clip; }
 .hero-grid { display: grid; gap: 2.5rem; align-items: center; }
 .hero-copy { display: grid; gap: 1.5rem; justify-items: start; }
-@media (min-width: 900px) { .hero-copy { padding-left: var(--c-left, 0px); } } /* set from the C of Compliance by main.js */
 .hero-grid > .h-display { text-wrap: pretty; }
 .line { display: block; overflow: hidden; padding: 0.04em 0.1em 0.14em 0; margin: -0.04em -0.1em -0.14em 0; }
 .w { display: inline-block; }
@@ -444,7 +443,7 @@ p, dd { text-wrap: pretty; }
 .pull { font-size: clamp(1.5rem, 1rem + 1.2vw, 2.25rem); line-height: 1.2; letter-spacing: -0.02em; font-weight: 700; color: var(--cream); max-width: 22ch; text-wrap: balance; margin: 0; }
 
 /* about section on the home page */
-.about-intro { display: grid; gap: 1rem; margin-top: 1.5rem; max-width: 62ch; }
+.about-intro { display: grid; gap: 1rem; margin-top: 1.5rem; max-width: none; }
 .about-intro p { color: rgba(247, 244, 234, 0.9); font-size: var(--t-lead); line-height: 1.55; }
 .about-team-h { margin-top: clamp(2.5rem, 5vw, 3.5rem); font-size: var(--t-h3); letter-spacing: -0.025em; color: var(--cream); }
 .about-team-h + .team { margin-top: 1.25rem; }

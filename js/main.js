@@ -85,18 +85,6 @@
     reveals.forEach(function (el) { el.classList.add('in'); });
   }
 
-  /* Hero: the sentence starts under the C of "Compliance." */
-  var cWord = $('.h-display .line:last-child .w:last-child');
-  var heroCopy = $('.hero-copy');
-  var alignLede = function () {
-    if (!cWord || !heroCopy) return;
-    var gridLeft = heroCopy.parentNode.getBoundingClientRect().left;
-    heroCopy.style.setProperty('--c-left', Math.max(0, Math.round(cWord.getBoundingClientRect().left - gridLeft)) + 'px');
-  };
-  alignLede();
-  window.addEventListener('resize', alignLede);
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(alignLede);
-
   /* Phone action bar steps away while the contact section is on screen */
   var dock = $('#dock');
   var awayEls = [$('#contact'), $('footer')].filter(Boolean);
