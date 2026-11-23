@@ -310,6 +310,7 @@ h3 { letter-spacing: -0.015em; line-height: 1.25; }
 .member-body { display: grid; gap: 0.9rem; align-content: start; }
 .member-body p:not(.member-role) { color: var(--ink); max-width: 62ch; }
 .member-lead { grid-column: 1 / -1; }
+@media (min-width: 800px) { .member-lead { grid-template-columns: auto 1fr; gap: 2.5rem; align-items: center; } .member-photo { width: 220px; } }
 .nav-links a[aria-current="page"] { background: rgb(var(--navy-rgb) / 0.07); }
 
 /* Client testimonial */
