@@ -45,7 +45,7 @@ Nothing from the Admin needs to be carried over or re-built. No custom code is r
 **Home page, in order:**
 
 1. Hero: headline, one supporting sentence, name and title, headshot in a circle over a navy and green shape.
-2. About Us (light green): heading, two paragraphs, then "Meet the team" with Chelsea's card. This used to be a separate page; it is now the second section of the home page, and the menu's About Us goes to it.
+2. About Us (light green): heading, two paragraphs, then "Meet the team" with Chelsea's bio card (no photo; the photo is in the hero). This used to be a separate page; it is now the second section of the home page, and the menu's About Us goes to it.
 3. Services (navy background): heading, sentence, four open-and-close items.
 4. Working together (light green background): heading and three cards.
 5. Why partner with us (cream): four short reasons in two columns.
@@ -126,7 +126,7 @@ Your Partner in People, Performance, and Compliance. · Chelsea Shumaker, PHR ·
 |------|------|-----|
 | `assets/logo.png` | 300 × 148 | Header |
 | `assets/logo-light.png` | 300 × 148 | Footer |
-| `assets/chelsea-headshot.jpg` | 281 × 281 | Hero and About Us section |
+| `assets/chelsea-headshot.jpg` | 281 × 281 | Hero |
 | `assets/og-image.png` | 1200 × 630 | Social share image |
 | `assets/icon-512.png`, `icon-192.png`, `apple-touch-icon.png` | 512 / 192 / 180 | Site icon (Wix asks for one image, use `icon-512.png`) |
 | `assets/fonts/*.woff2` | | Only if Plus Jakarta Sans is not in Wix |
