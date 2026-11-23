@@ -85,6 +85,37 @@
     reveals.forEach(function (el) { el.classList.add('in'); });
   }
 
+  /* Menu jumps: show the target section at once instead of waiting on its fade */
+  $$('a[href^="#"]').forEach(function (a) {
+    a.addEventListener('click', function () {
+      var h = a.getAttribute('href');
+      var t = h.length > 1 ? document.querySelector(h) : null;
+      if (t) $$('[data-reveal]', t).forEach(function (el) { el.classList.add('in'); });
+    });
+  });
+
+  /* Menu: mark the section in view */
+  var navLinks = $$('.nav-links a[href^="#"], .nav-sheet a[href^="#"]');
+  var secs = [];
+  navLinks.forEach(function (l) {
+    var s = document.querySelector(l.getAttribute('href'));
+    if (s && secs.indexOf(s) < 0) secs.push(s);
+  });
+  if ('IntersectionObserver' in window && secs.length) {
+    var current = null;
+    var so = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) current = e.target.id;
+        else if (current === e.target.id) current = null;
+      });
+      navLinks.forEach(function (l) {
+        if (l.getAttribute('href') === '#' + current) l.setAttribute('aria-current', 'true');
+        else l.removeAttribute('aria-current');
+      });
+    }, { rootMargin: '-40% 0px -55% 0px' });
+    secs.forEach(function (s) { so.observe(s); });
+  }
+
   /* Hero pointer parallax: eased toward the pointer, like a spring with no overshoot */
   var visual = $('.hero-visual');
   if (visual && !reduceMotion && window.matchMedia('(pointer: fine)').matches) {
