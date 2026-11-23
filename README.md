@@ -15,7 +15,7 @@ One-page marketing site for Elevate HR Solutions (Chelsea Shumaker, PHR, Tampa, 
 5. High-resolution logo and headshot. Real testimonials, if she wants them (none are invented).
 
 ## At launch (preview to production)
-- Replace `https://tehchaoz.github.io/elevate-hr-solutions/` with `https://elevatehr.org/` in `index.html` and `about.html` (canonical, og tags, structured data). The phone, email and location in the structured data are static text in `index.html`.
+- Replace `https://tehchaoz.github.io/elevate-hr-solutions/` with `https://elevatehr.org/` in `index.html` (canonical, og tags, structured data). The phone, email and location in the structured data are static text in `index.html`.
 - Remove the `noindex, nofollow` meta tag (the visible "design preview" footer line is already gone).
 
 ## Admin removed; the site moves to Wix

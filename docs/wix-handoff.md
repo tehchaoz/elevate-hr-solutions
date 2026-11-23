@@ -40,7 +40,7 @@ Nothing from the Admin needs to be carried over or re-built. No custom code is r
 
 ## 3. Pages, navigation and section order
 
-**Navigation (every page):** logo (left), Services, Working together, About Us, FAQ, then one button "Book intro call". Phone-size: a menu that opens a panel.
+**Navigation:** logo (left), Services, Working together, About Us, Recommendations, FAQ, then one button "Book intro call". Phone-size: a menu that opens a panel.
 
 **Home page, in order:**
 
@@ -48,12 +48,13 @@ Nothing from the Admin needs to be carried over or re-built. No custom code is r
 2. Services (navy background): heading, sentence, four open-and-close items.
 3. Working together (light green background): heading and three cards.
 4. Why partner with us (cream): four short reasons in two columns.
-5. Client testimonial (navy): heading, short quote, full testimonial card linking to the LinkedIn post.
-6. FAQ (cream): five open-and-close questions.
-7. Let's connect (navy): contact details and the form.
-8. Footer (deep navy): logo, tagline, contact line, copyright.
+5. About Us (navy): heading, two paragraphs, then "Meet the team" with Chelsea's card. This used to be a separate page; it is now a section of the home page, and the menu's About Us goes to it.
+6. Recommendations (light green): heading, short quote, full recommendation card linking to the LinkedIn post. The client can add more recommendations here.
+7. FAQ (cream): five open-and-close questions.
+8. Let's connect (navy): contact details and the form.
+9. Footer (deep navy): logo, tagline, contact line, copyright.
 
-**About Us page:** introduction, then Meet the team (Chelsea, with photo).
+There is **no separate About page** any more: one page only.
 
 ## 4. Copy (use exactly)
 
@@ -84,7 +85,7 @@ Four areas of support. Open any one to see what is included.
 - **Cross-industry perspective:** Experience across engineering, healthcare, technology, hospitality, and construction environments enables us to apply proven practices and deliver adaptable solutions to each engagement.
 - **Tailored approach:** We translate complex workforce challenges into practical, actionable strategies aligned with your business priorities, organizational culture, and long-term objectives.
 
-### Client testimonial: "What a client says."
+### Recommendations: "Recommendations."
 - **Pull quote:** "What stood out most was their incredible flexibility."
 - **Supporting line:** Flexible support. Experienced guidance. The right expertise at the right time.
 - **Full testimonial (card):**
@@ -110,11 +111,11 @@ Phone 317-796-7914 · Email chelsea@elevatehr.org · LinkedIn https://www.linked
 
 **Form: "Send a message"** with fields Your name (required), Email (required), Business name (optional), How can we help? (required), and the button "Send message". Error messages: "Please enter your name." / "Please enter an email like name@company.com." / "Please tell us how we can help."
 
-### About Us page
+### About Us (home page section)
 - **Heading:** About Elevate HR Solutions
 - **Paragraph 1:** Partnering with Elevate HR gives you access to a team of accomplished HR professionals who bring decades of collective experience and a broad range of expertise to every engagement. Our approach blends strategy with practical, hands-on execution as we create a solid foundation and lasting results for our clients.
 - **Paragraph 2:** We also offer light bookkeeping and administrative support for businesses that need assistance beyond the traditional scope of HR services.
-- **Meet the team:** Chelsea Shumaker, PHR, Founder / Principal HR Consultant. "I've spent 22 years rolling up my sleeves in HR roles across a wide range of industries, helping organizations establish the right structure, navigate complex people challenges, and create a workplace where teams can thrive. I'm committed to helping companies build and sustain high-performing cultures while ensuring the people, processes, and HR infrastructure behind them operate effectively."
+- **Meet the team (smaller heading under the paragraphs):** Chelsea Shumaker, PHR, Founder / Principal HR Consultant. "I've spent 22 years rolling up my sleeves in HR roles across a wide range of industries, helping organizations establish the right structure, navigate complex people challenges, and create a workplace where teams can thrive. I'm committed to helping companies build and sustain high-performing cultures while ensuring the people, processes, and HR infrastructure behind them operate effectively."
 
 ### Footer
 Your Partner in People, Performance, and Compliance. · Chelsea Shumaker, PHR · Tampa, Florida · 317-796-7914 · chelsea@elevatehr.org · © 2026 Elevate HR Solutions. All rights reserved.
@@ -125,7 +126,7 @@ Your Partner in People, Performance, and Compliance. · Chelsea Shumaker, PHR ·
 |------|------|-----|
 | `assets/logo.png` | 300 × 148 | Header |
 | `assets/logo-light.png` | 300 × 148 | Footer |
-| `assets/chelsea-headshot.jpg` | 281 × 281 | Hero and About Us |
+| `assets/chelsea-headshot.jpg` | 281 × 281 | Hero and About Us section |
 | `assets/og-image.png` | 1200 × 630 | Social share image |
 | `assets/icon-512.png`, `icon-192.png`, `apple-touch-icon.png` | 512 / 192 / 180 | Site icon (Wix asks for one image, use `icon-512.png`) |
 | `assets/fonts/*.woff2` | | Only if Plus Jakarta Sans is not in Wix |
@@ -134,7 +135,6 @@ Your Partner in People, Performance, and Compliance. · Chelsea Shumaker, PHR ·
 
 - **Home title:** Elevate HR Solutions | HR Consulting in Tampa, Florida
 - **Home description:** use the sentence from `index.html` (`meta name="description"`).
-- **About Us title:** About Us | Elevate HR Solutions
 - **Share image:** `og-image.png`. Add the business name, phone, email, Tampa FL address and the LinkedIn link in Wix business info so Wix writes the structured data.
 - Do not publish with the "hide from search engines" setting on, once signed off.
 
@@ -145,7 +145,7 @@ Your Partner in People, Performance, and Compliance. · Chelsea Shumaker, PHR ·
 - [ ] Exact brand colors if they differ from the logo.
 - [ ] LinkedIn company page URL confirmed.
 - [ ] Confirm the five FAQ answers and the services lists are final.
-- [ ] More testimonials (with permission), if she has them.
+- [ ] More recommendations (with permission), if she has them: each is a name, title, the text, and an optional link.
 - [ ] Business hours, if she wants them shown.
 - [ ] Final sign-off on the Wix preview before the domain is switched.
 
