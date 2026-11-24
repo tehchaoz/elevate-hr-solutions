@@ -105,7 +105,9 @@ a { color: inherit; text-underline-offset: 0.2em; text-decoration-thickness: 1.5
 .h-section.center { max-width: 24ch; }
 .tl { color: var(--teal); } /* the logo green, as the client asked; large display text only */
 h3 { letter-spacing: -0.015em; line-height: 1.25; }
-.lede { font-size: var(--t-lead); line-height: 1.55; color: var(--ink); max-width: 38ch; font-style: italic; text-wrap: balance; }
+.lede { font-size: var(--t-lead); line-height: 1.55; color: var(--ink); font-style: italic; text-wrap: pretty; }
+/* Desktop: the intro sentence runs the full width of the sections, in line with the headline */
+@media (min-width: 900px) { .lede { font-size: max(var(--t-lead), calc(min(100vw - 2 * var(--gutter), var(--wrap)) / 43.8)); } }
 
 /* Buttons */
 .btn {
